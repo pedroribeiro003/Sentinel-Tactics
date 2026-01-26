@@ -9,11 +9,12 @@ type Region = {
 };
 
 const REGIONS: Region[] = [
-  { value: "BR1", label: "BR" },
-  { value: "NA1", label: "NA" },
-  { value: "EUW1", label: "EUW" },
-  { value: "EUN1", label: "EUNE" },
+  { value: "BR", label: "BR" },
+  { value: "NA", label: "NA" },
+  { value: "EUW", label: "EUW" },
+  { value: "EUNE", label: "EUNE" },
   { value: "KR", label: "KR" },
+  
 ];
 
 type SearchBarProps = {
@@ -68,7 +69,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Buscar jogador..."
+          placeholder="Nome do jogo+ #BR1..."
           className="
             h-10
             w-full
