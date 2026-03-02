@@ -49,6 +49,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 ))}
             </select>
 
+            {/* Input */}
             <div className="relative flex-1">
                 <input
                     type="text"
@@ -56,7 +57,22 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Buscar jogador..."
-                    className="h-10 w-full rounded-md bg-surface pl-10 pr-3 text-textPrimary placeholder:text-textSecondary outline-none border border-accent focus:border-highlight focus:ring-1 focus:ring-highlight"
+                    className="
+            h-10
+            w-full
+            rounded-md
+            bg-surface
+            pl-10
+            pr-3
+            text-textPrimary
+            placeholder:text-textSecondary
+            outline-none
+            border
+            border-accent
+            focus:border-highlight
+            focus:ring-1
+            focus:ring-highlight
+          "
                 />
 
                 <button
