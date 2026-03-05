@@ -1,14 +1,16 @@
 "use client";
-export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ChampionTable, { ChampionRow } from "../components/Table";
 import { fetchTierList } from "../services/tierListService";
 import { EloSelector } from "../components/EloSelector";
 
-export default function HomePage() {
+interface Props {
+    searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function HomePage({ searchParams }: Props) {
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     const [elo, setEloState] = useState("PLATINUM");
     const [tierList, setTierList] = useState<ChampionRow[]>([]);
@@ -16,13 +18,24 @@ export default function HomePage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const eloParam = searchParams.get("elo");
+        const eloParam = searchParams.elo
+            ? Array.isArray(searchParams.elo)
+                ? searchParams.elo[0]
+                : searchParams.elo
+            : undefined;
         if (eloParam) setEloState(eloParam);
     }, [searchParams]);
 
     function setElo(newElo: string) {
         setEloState(newElo);
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams();
+        Object.entries(searchParams).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach((v) => params.append(key, v));
+            } else if (value) {
+                params.set(key, value);
+            }
+        });
         params.set("elo", newElo);
         router.replace(`?${params.toString()}`, { scroll: false });
     }

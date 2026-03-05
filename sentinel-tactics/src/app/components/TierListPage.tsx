@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ChampionTable, { ChampionRow } from "../components/Table";
 import { fetchTierList } from "../services/tierListService";
 import { EloSelector } from "../components/EloSelector";
@@ -20,13 +20,24 @@ const LANE_LABELS: Record<Lane, string> = {
 
 const PAGE_SIZE = 20;
 
-export default function TierListPage() {
+interface Props {
+    searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function TierListPage({ searchParams }: Props) {
     const router = useRouter();
-    const searchParams = useSearchParams();
 
     // ✅ Lê elo e lane da URL, com defaults
-    const [elo, setEloState] = useState(searchParams.get("elo") ?? "PLATINUM");
-    const [lane, setLaneState] = useState<Lane>((searchParams.get("lane") as Lane) ?? "ALL");
+    const [elo, setEloState] = useState(
+        searchParams.elo ? (Array.isArray(searchParams.elo) ? searchParams.elo[0] : searchParams.elo) : "PLATINUM"
+    );
+    const [lane, setLaneState] = useState<Lane>(
+        (searchParams.lane
+            ? Array.isArray(searchParams.lane)
+                ? searchParams.lane[0]
+                : searchParams.lane
+            : "ALL") as Lane
+    );
 
     const [data, setData] = useState<ChampionRow[]>([]);
     const [limit, setLimit] = useState(PAGE_SIZE);
@@ -38,14 +49,28 @@ export default function TierListPage() {
     // ✅ Persiste elo e lane na URL
     function setElo(newElo: string) {
         setEloState(newElo);
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams();
+        Object.entries(searchParams).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach((v) => params.append(key, v));
+            } else if (value) {
+                params.set(key, value);
+            }
+        });
         params.set("elo", newElo);
         router.replace(`?${params.toString()}`, { scroll: false });
     }
 
     function setLane(newLane: Lane) {
         setLaneState(newLane);
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams();
+        Object.entries(searchParams).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach((v) => params.append(key, v));
+            } else if (value) {
+                params.set(key, value);
+            }
+        });
         if (newLane === "ALL") {
             params.delete("lane");
         } else {
