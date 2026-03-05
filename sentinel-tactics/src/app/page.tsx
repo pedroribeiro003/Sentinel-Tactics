@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ChampionTable, { ChampionRow } from "./components/Table";
@@ -9,10 +10,15 @@ export default function HomePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const [elo, setEloState] = useState(searchParams.get("elo") ?? "PLATINUM");
+    const [elo, setEloState] = useState("PLATINUM");
     const [tierList, setTierList] = useState<ChampionRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const eloParam = searchParams.get("elo");
+        if (eloParam) setEloState(eloParam);
+    }, [searchParams]);
 
     function setElo(newElo: string) {
         setEloState(newElo);
