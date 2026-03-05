@@ -112,7 +112,6 @@ export default function ProBuildsPage() {
 
             {/* Filtros */}
             <section className="flex flex-col gap-4">
-                {/* Busca por champion */}
                 <div className="w-full max-w-md">
                     <input
                         type="text"
@@ -170,12 +169,25 @@ export default function ProBuildsPage() {
             </section>
 
             {/* Resultados */}
-            <section className="flex flex-col gap-3">
+            <section className="flex flex-col gap-2">
                 {/* Contagem */}
                 {!loading && !error && (
-                    <p className="text-xs text-textSecondary">
+                    <p className="text-xs text-textSecondary mb-1">
                         {total > 0 ? `Exibindo ${builds.length} de ${total} builds` : "Nenhuma build encontrada"}
                     </p>
+                )}
+
+                {/* Header da tabela — mesmo grid do card */}
+                {!loading && !error && builds.length > 0 && (
+                    <div className="grid grid-cols-[200px_100px_90px_220px_1fr_70px_100px] gap-4 px-4 py-2 text-xs text-textSecondary border-b border-accent/30">
+                        <span className="pl-2">Champion</span>
+                        <span>Lane</span>
+                        <span className="text-center">KDA</span>
+                        <span>Items</span>
+                        <span />
+                        <span className="text-center">CS</span>
+                        <span className="text-right">Info</span>
+                    </div>
                 )}
 
                 {/* Loading */}
@@ -186,7 +198,7 @@ export default function ProBuildsPage() {
 
                 {/* Cards */}
                 {!loading && !error && (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1">
                         {builds.map((build) => (
                             <ProBuildCard key={build.id} build={build} />
                         ))}

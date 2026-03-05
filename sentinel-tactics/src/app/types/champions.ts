@@ -1,7 +1,7 @@
-// src/types/champion.ts
+// src/types/champions.ts
 export interface Champion {
     name: string;
-    title: string;
+    title: string | null;
     icon_url: string | null;
     splash_url: string | null;
     loading_url: string | null;
@@ -16,8 +16,14 @@ export interface Performance {
     lane: string;
 }
 
+// ✅ Item dentro de um build agora tem icon_url
+export interface BuildItem {
+    itemId: number;
+    icon_url: string | null;
+}
+
 export interface Build {
-    items: number[];
+    items: BuildItem[];
     winrate: number;
     games: number;
     pickrate: number;
@@ -50,9 +56,11 @@ export interface Matchups {
     difficult: Matchup[];
 }
 
+// ✅ Item individual agora tem icon_url
 export interface Item {
     itemId: number;
     itemName: string | null;
+    icon_url: string | null;
     winrate: number;
     games: number;
     pickrate: number;

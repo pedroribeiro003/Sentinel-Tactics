@@ -5,19 +5,101 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Button } from "../../components/Button";
 import { fetchChampionDetails } from "../../services/championsService";
 import { ChampionDetails } from "../../types/champions";
+import { getSummonerSpellIcon, getRuneIcon } from "../../utils/ddragon";
+
+// =====================================================
+// LANE ICONS (SVG estilo LoL)
+// =====================================================
+const LaneIcon = ({ lane, active }: { lane: string; active: boolean }) => {
+    const color = active ? "#fff" : "#8fa3b1";
+    const size = 22;
+
+    if (lane === "ALL")
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <text
+                    x="12"
+                    y="17"
+                    textAnchor="middle"
+                    fontSize="18"
+                    fontWeight="bold"
+                    fill="#4fc3f7"
+                    fontFamily="serif"
+                >
+                    ✦
+                </text>
+            </svg>
+        );
+    if (lane === "TOP")
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path d="M4 20 L4 4 L20 4" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M4 4 L20 20" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+                <rect x="13" y="13" width="7" height="7" rx="1" fill={color} opacity="0.5" />
+            </svg>
+        );
+    if (lane === "JUNGLE")
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path
+                    d="M12 3 C7 3 3 7 3 12 C3 17 7 21 12 21 C17 21 21 17 21 12"
+                    stroke={color}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                />
+                <path
+                    d="M12 7 L12 12 L16 10"
+                    stroke={color}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+                <circle cx="18" cy="6" r="3" fill={color} opacity="0.6" />
+            </svg>
+        );
+    if (lane === "MIDDLE")
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path d="M4 20 L20 4" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="12" cy="12" r="3" fill={color} />
+            </svg>
+        );
+    if (lane === "BOTTOM")
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path d="M4 4 L20 4 L20 20" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M20 20 L4 4" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+                <rect x="4" y="13" width="7" height="7" rx="1" fill={color} opacity="0.5" />
+            </svg>
+        );
+    if (lane === "UTILITY")
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path
+                    d="M12 3 L14.5 9 L21 9.5 L16 14 L17.5 21 L12 17.5 L6.5 21 L8 14 L3 9.5 L9.5 9 Z"
+                    stroke={color}
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                    fill={color}
+                    fillOpacity="0.2"
+                />
+            </svg>
+        );
+    return null;
+};
 
 const LANES = [
-    { value: "ALL", label: "Todas as Lanes", icon: "🎯" },
-    { value: "TOP", label: "Top", icon: "⬆️" },
-    { value: "JUNGLE", label: "Jungle", icon: "🌲" },
-    { value: "MIDDLE", label: "Mid", icon: "⭐" },
-    { value: "BOTTOM", label: "ADC", icon: "⬇️" },
-    { value: "UTILITY", label: "Support", icon: "🛡️" },
+    { value: "ALL", label: "Todas as Lanes" },
+    { value: "TOP", label: "Top" },
+    { value: "JUNGLE", label: "Jungle" },
+    { value: "MIDDLE", label: "Mid" },
+    { value: "BOTTOM", label: "ADC" },
+    { value: "UTILITY", label: "Support" },
 ];
 
-// ============================================
-// COMPONENTE STAT CARD
-// ============================================
+// =====================================================
+// STAT CARD
+// =====================================================
 function StatCard({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
     return (
         <div className={`bg-surface p-6 rounded ${highlight ? "border-2 border-highlight" : ""}`}>
@@ -27,9 +109,75 @@ function StatCard({ label, value, highlight = false }: { label: string; value: s
     );
 }
 
-// ============================================
-// COMPONENTE PRINCIPAL
-// ============================================
+// =====================================================
+// ITEM ICON
+// =====================================================
+function ItemIcon({ itemId, icon_url, name }: { itemId: number; icon_url?: string | null; name?: string }) {
+    return (
+        <div className="relative group">
+            <div className="w-14 h-14 bg-accent rounded border-2 border-accent overflow-hidden hover:border-highlight transition">
+                {icon_url ? (
+                    <img
+                        src={icon_url}
+                        alt={name || `Item ${itemId}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-xs font-bold">{itemId}</span>
+                    </div>
+                )}
+            </div>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-background border border-accent rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                {name || `Item ${itemId}`}
+            </div>
+        </div>
+    );
+}
+
+// =====================================================
+// RUNE ICON
+// =====================================================
+function RuneIcon({ id, size = 12, ring = true }: { id: number; size?: number; ring?: boolean }) {
+    const url = getRuneIcon(id);
+    const sizeClass = `w-${size} h-${size}`;
+    return (
+        <div
+            className={`${sizeClass} rounded-full ${
+                ring ? "bg-accent p-1" : ""
+            } overflow-hidden flex items-center justify-center flex-shrink-0`}
+        >
+            {url ? (
+                <img src={url} alt={`Rune ${id}`} className="w-full h-full object-contain" />
+            ) : (
+                <span className="text-xs font-bold opacity-50">{id}</span>
+            )}
+        </div>
+    );
+}
+
+// =====================================================
+// SPELL ICON
+// =====================================================
+function SpellIcon({ spellId }: { spellId: number }) {
+    const url = getSummonerSpellIcon(spellId);
+    return (
+        <div className="w-12 h-12 rounded overflow-hidden border-2 border-accent flex items-center justify-center bg-accent">
+            {url ? (
+                <img src={url} alt={`Spell ${spellId}`} className="w-full h-full object-cover" />
+            ) : (
+                <span className="text-xs font-bold">{spellId}</span>
+            )}
+        </div>
+    );
+}
+
+// =====================================================
+// MAIN PAGE
+// =====================================================
 export default function ChampionPage() {
     const params = useParams();
     const searchParams = useSearchParams();
@@ -50,10 +198,8 @@ export default function ChampionPage() {
                 setLoading(false);
                 return;
             }
-
             setLoading(true);
             setError(null);
-
             try {
                 const data = await fetchChampionDetails({
                     name: championName,
@@ -62,34 +208,25 @@ export default function ChampionPage() {
                 });
                 setChampionData(data);
             } catch (err: any) {
-                console.error("Erro ao buscar champion:", err);
                 setError(err.message || "Erro ao buscar dados do campeão");
                 setChampionData(null);
             } finally {
                 setLoading(false);
             }
         }
-
         loadChampionDetails();
     }, [championName, elo, lane]);
 
-    const handleLaneChange = (newLane: string) => {
-        router.push(`/champion/${championName}?elo=${elo}&lane=${newLane}`);
-    };
+    const handleLaneChange = (newLane: string) => router.push(`/champion/${championName}?elo=${elo}&lane=${newLane}`);
+    const handleEloChange = (newElo: string) => router.push(`/champion/${championName}?elo=${newElo}&lane=${lane}`);
 
-    const handleEloChange = (newElo: string) => {
-        router.push(`/champion/${championName}?elo=${newElo}&lane=${lane}`);
-    };
-
-    if (loading) {
+    if (loading)
         return (
             <main className="p-4 flex justify-center items-center min-h-screen">
                 <div className="text-2xl">Carregando dados do campeão...</div>
             </main>
         );
-    }
-
-    if (error) {
+    if (error)
         return (
             <main className="p-4 flex flex-col items-center justify-center min-h-screen gap-4">
                 <div className="text-2xl text-red-500">{error}</div>
@@ -98,9 +235,7 @@ export default function ChampionPage() {
                 </Button>
             </main>
         );
-    }
-
-    if (!championData) {
+    if (!championData)
         return (
             <main className="p-4 flex flex-col items-center justify-center min-h-screen gap-4">
                 <div className="text-2xl">Campeão não encontrado</div>
@@ -109,15 +244,15 @@ export default function ChampionPage() {
                 </Button>
             </main>
         );
-    }
 
     const currentLane = LANES.find((l) => l.value === lane);
+    const pct = (value: number | null) => (value != null ? `${value.toFixed(1)}%` : "N/A");
 
     return (
         <main className="p-4 flex flex-col gap-8">
-            {/* HEADER DO CAMPEÃO */}
+            {/* HEADER */}
             <section className="flex flex-row gap-4 bg-surface p-4 items-center">
-                <div className="w-32 h-32">
+                <div className="w-32 h-32 flex-shrink-0">
                     <img
                         src={championData.champion.icon_url || "/placeholder-champion.png"}
                         alt={championData.champion.name}
@@ -129,11 +264,9 @@ export default function ChampionPage() {
                     <h1 className="text-3xl font-bold">{championData.champion.name}</h1>
                     <p className="text-textSecondary">{championData.champion.title}</p>
                     <span className="text-textSecondary mt-2">
-                        {elo} • {currentLane?.icon} {currentLane?.label}
+                        {elo} • {currentLane?.label}
                     </span>
-
                     <div className="py-2 flex gap-2">
-                        {/* Seletor de Elo */}
                         <select
                             value={elo}
                             onChange={(e) => handleEloChange(e.target.value)}
@@ -146,33 +279,34 @@ export default function ChampionPage() {
                             <option value="PLATINUM">Platinum</option>
                             <option value="DIAMOND">Diamond</option>
                         </select>
-
                         <Button variant="secondary" onClick={() => router.push("/")}>
                             Buscar Outro Champion
                         </Button>
                     </div>
                 </div>
 
-                {/* SELETOR DE LANE RÁPIDO */}
+                {/* LANE SELECTOR */}
                 <div className="flex flex-col gap-2">
                     <span className="text-xs text-textSecondary text-center">Trocar Lane:</span>
-                    <div className="flex gap-2">
-                        {LANES.map((l) => (
-                            <button
-                                key={l.value}
-                                onClick={() => handleLaneChange(l.value)}
-                                className={`w-10 h-10 rounded flex items-center justify-center text-xl transition ${
-                                    lane === l.value ? "bg-highlight text-background" : "bg-background hover:bg-accent"
-                                }`}
-                                title={l.label}
-                            >
-                                {l.icon}
-                            </button>
-                        ))}
+                    <div className="flex gap-1">
+                        {LANES.map((l) => {
+                            const active = lane === l.value;
+                            return (
+                                <button
+                                    key={l.value}
+                                    onClick={() => handleLaneChange(l.value)}
+                                    title={l.label}
+                                    className={`w-10 h-10 rounded flex items-center justify-center transition ${
+                                        active ? "bg-highlight" : "bg-background hover:bg-accent"
+                                    }`}
+                                >
+                                    <LaneIcon lane={l.value} active={active} />
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
-                {/* TIER */}
                 {championData.performance.tier && (
                     <div className="flex flex-col items-center bg-background p-4 rounded">
                         <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
@@ -185,23 +319,15 @@ export default function ChampionPage() {
                 )}
             </section>
 
-            {/* ESTATÍSTICAS GERAIS */}
+            {/* ESTATÍSTICAS */}
             <section className="grid grid-cols-4 gap-4">
                 <StatCard
                     label="Win Rate"
-                    value={championData.performance.winrate ? `${championData.performance.winrate.toFixed(1)}%` : "N/A"}
+                    value={pct(championData.performance.winrate)}
                     highlight={(championData.performance.winrate || 0) >= 50}
                 />
-                <StatCard
-                    label="Pick Rate"
-                    value={
-                        championData.performance.pickrate ? `${championData.performance.pickrate.toFixed(1)}%` : "N/A"
-                    }
-                />
-                <StatCard
-                    label="Ban Rate"
-                    value={championData.performance.banrate ? `${championData.performance.banrate.toFixed(1)}%` : "N/A"}
-                />
+                <StatCard label="Pick Rate" value={pct(championData.performance.pickrate)} />
+                <StatCard label="Ban Rate" value={pct(championData.performance.banrate)} />
                 <StatCard label="Partidas" value={championData.performance.games.toLocaleString()} />
             </section>
 
@@ -211,67 +337,58 @@ export default function ChampionPage() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold">🔮 Runas Recomendadas</h2>
                         <div className="text-sm text-textSecondary">
-                            WR:{" "}
-                            <span className="text-highlight font-medium">
-                                {championData.runes[0].winrate.toFixed(1)}%
-                            </span>{" "}
-                            • PR: <span className="font-medium">{championData.runes[0].pickrate.toFixed(1)}%</span> •{" "}
+                            WR: <span className="text-highlight font-medium">{pct(championData.runes[0].winrate)}</span>{" "}
+                            • PR: <span className="font-medium">{pct(championData.runes[0].pickrate)}</span> •{" "}
                             {championData.runes[0].games.toLocaleString()} jogos
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
-                        {/* PRIMARY TREE */}
+                        {/* PRIMARY */}
                         <div className="bg-background p-4 rounded border-2 border-accent">
-                            <h3 className="font-bold text-center mb-4 text-lg">Primary Tree</h3>
-                            <div className="flex justify-center mb-4">
-                                <div className="relative group">
-                                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 p-1">
-                                        <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                                            <div className="text-2xl">🔥</div>
-                                        </div>
-                                    </div>
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-background border border-accent rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                        Keystone: {championData.runes[0].primary.keystone}
-                                    </div>
-                                </div>
+                            <div className="flex items-center gap-3 mb-4">
+                                <RuneIcon id={championData.runes[0].primary.style} size={8} ring={false} />
+                                <h3 className="font-bold text-lg">Primary Tree</h3>
                             </div>
+                            {/* Keystone */}
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-16 h-16 rounded-full ring-2 ring-yellow-500 overflow-hidden flex items-center justify-center bg-accent flex-shrink-0">
+                                    {getRuneIcon(championData.runes[0].primary.keystone) ? (
+                                        <img
+                                            src={getRuneIcon(championData.runes[0].primary.keystone)}
+                                            alt="Keystone"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    ) : (
+                                        <span className="text-xs font-bold">
+                                            {championData.runes[0].primary.keystone}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="text-sm font-medium text-textSecondary">Keystone</span>
+                            </div>
+                            {/* Perks */}
                             <div className="flex flex-col gap-3">
                                 {championData.runes[0].primary.perks.map((perkId, index) => (
-                                    <div key={index} className="flex items-center gap-3 group">
-                                        <div className="relative">
-                                            <div className="w-12 h-12 rounded-full bg-accent p-1">
-                                                <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                                                    <div className="text-lg">⚡</div>
-                                                </div>
-                                            </div>
-                                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-background border border-accent rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                                Perk ID: {perkId}
-                                            </div>
-                                        </div>
-                                        <span className="text-sm">Perk {perkId}</span>
+                                    <div key={index} className="flex items-center gap-3">
+                                        <RuneIcon id={perkId} size={10} />
+                                        <span className="text-sm text-textSecondary">Perk {index + 1}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* SECONDARY TREE */}
+                        {/* SECONDARY */}
                         <div className="bg-background p-4 rounded border-2 border-accent/50">
-                            <h3 className="font-bold text-center mb-4 text-lg">Secondary Tree</h3>
-                            <div className="flex flex-col gap-3 mt-12">
+                            <div className="flex items-center gap-3 mb-4">
+                                <RuneIcon id={championData.runes[0].secondary.style} size={8} ring={false} />
+                                <h3 className="font-bold text-lg">Secondary Tree</h3>
+                            </div>
+                            <div className="flex flex-col gap-3 mt-6">
                                 {championData.runes[0].secondary.perks.map((perkId, index) => (
-                                    <div key={index} className="flex items-center gap-3 group">
-                                        <div className="relative">
-                                            <div className="w-12 h-12 rounded-full bg-accent/50 p-1">
-                                                <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                                                    <div className="text-lg">✨</div>
-                                                </div>
-                                            </div>
-                                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-background border border-accent rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                                Perk ID: {perkId}
-                                            </div>
-                                        </div>
-                                        <span className="text-sm">Perk {perkId}</span>
+                                    <div key={index} className="flex items-center gap-3">
+                                        <RuneIcon id={perkId} size={10} />
+                                        <span className="text-sm text-textSecondary">Perk {index + 1}</span>
                                     </div>
                                 ))}
                             </div>
@@ -281,13 +398,11 @@ export default function ChampionPage() {
                     {/* STAT SHARDS */}
                     <div className="mt-6 bg-background p-4 rounded">
                         <h4 className="font-bold mb-3 text-center">Fragmentos de Estatística</h4>
-                        <div className="flex justify-center gap-6">
+                        <div className="flex justify-center gap-8">
                             {championData.runes[0].statShards.map((shardId, index) => (
                                 <div key={index} className="flex flex-col items-center gap-2">
-                                    <div className="w-10 h-10 rounded bg-accent flex items-center justify-center text-lg">
-                                        {index === 0 ? "⚡" : index === 1 ? "⚔️" : "❤️"}
-                                    </div>
-                                    <span className="text-xs text-center text-textSecondary">Shard {shardId}</span>
+                                    <RuneIcon id={shardId} size={10} />
+                                    <span className="text-xs text-textSecondary">Shard {index + 1}</span>
                                 </div>
                             ))}
                         </div>
@@ -295,7 +410,35 @@ export default function ChampionPage() {
                 </section>
             )}
 
-            {/* MELHORES BUILDS */}
+            {/* SUMMONER SPELLS */}
+            {championData.summonerSpells && championData.summonerSpells.length > 0 && (
+                <section className="bg-surface p-6 rounded">
+                    <h2 className="text-xl font-bold mb-4">✨ Summoner Spells</h2>
+                    <div className="space-y-3">
+                        {championData.summonerSpells.map((spell, index) => (
+                            <div key={index} className="flex items-center gap-4 bg-background p-4 rounded">
+                                <div className="flex gap-2">
+                                    <SpellIcon spellId={spell.spell1} />
+                                    <SpellIcon spellId={spell.spell2} />
+                                </div>
+                                <div className="flex-1 flex gap-6">
+                                    <span className="text-sm text-textSecondary">
+                                        ✅ WR: <span className="text-highlight font-medium">{pct(spell.winrate)}</span>
+                                    </span>
+                                    <span className="text-sm text-textSecondary">
+                                        📊 PR: <span className="font-medium">{pct(spell.pickrate)}</span>
+                                    </span>
+                                    <span className="text-sm text-textSecondary">
+                                        {spell.games.toLocaleString()} jogos
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* BUILDS */}
             {championData.builds && championData.builds.length > 0 && (
                 <section className="bg-surface p-6 rounded">
                     <h2 className="text-xl font-bold mb-4">🏆 Melhores Builds Completas</h2>
@@ -311,12 +454,10 @@ export default function ChampionPage() {
                                         <div className="flex gap-4 mt-1 text-sm">
                                             <span className="text-textSecondary">
                                                 ✅ WR:{" "}
-                                                <span className="text-highlight font-medium">
-                                                    {build.winrate.toFixed(1)}%
-                                                </span>
+                                                <span className="text-highlight font-medium">{pct(build.winrate)}</span>
                                             </span>
                                             <span className="text-textSecondary">
-                                                📊 PR: <span className="font-medium">{build.pickrate.toFixed(1)}%</span>
+                                                📊 PR: <span className="font-medium">{pct(build.pickrate)}</span>
                                             </span>
                                             <span className="text-textSecondary">
                                                 {build.games.toLocaleString()} jogos
@@ -329,17 +470,9 @@ export default function ChampionPage() {
                                         </span>
                                     )}
                                 </div>
-
                                 <div className="flex gap-2 items-center">
-                                    {build.items.map((itemId, itemIndex) => (
-                                        <div key={itemIndex} className="relative group">
-                                            <div className="w-14 h-14 bg-accent rounded border-2 border-accent overflow-hidden hover:border-highlight transition flex items-center justify-center">
-                                                <span className="text-xs font-bold">{itemId}</span>
-                                            </div>
-                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-background border border-accent rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                                Item {itemId}
-                                            </div>
-                                        </div>
+                                    {build.items.map((item, itemIndex) => (
+                                        <ItemIcon key={itemIndex} itemId={item.itemId} icon_url={item.icon_url} />
                                     ))}
                                 </div>
                             </div>
@@ -348,7 +481,7 @@ export default function ChampionPage() {
                 </section>
             )}
 
-            {/* MELHORES ITEMS INDIVIDUAIS */}
+            {/* ITEMS INDIVIDUAIS */}
             {championData.items && championData.items.length > 0 && (
                 <section className="bg-surface p-6 rounded">
                     <h2 className="text-xl font-bold mb-4">📦 Melhores Items Individuais</h2>
@@ -358,21 +491,21 @@ export default function ChampionPage() {
                                 key={index}
                                 className="flex items-center gap-4 bg-background p-4 rounded hover:bg-accent/20 transition"
                             >
-                                <div className="w-16 h-16 bg-accent rounded overflow-hidden flex-shrink-0 border-2 border-accent flex items-center justify-center">
-                                    <span className="text-sm font-bold">{item.itemId}</span>
+                                <div className="flex-shrink-0">
+                                    <ItemIcon
+                                        itemId={item.itemId}
+                                        icon_url={item.icon_url}
+                                        name={item.itemName ?? undefined}
+                                    />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-bold text-lg">{item.itemName || `Item ${item.itemId}`}</p>
                                     <div className="flex gap-4 mt-1">
                                         <span className="text-sm text-textSecondary">
                                             ✅ Win Rate:{" "}
-                                            <span className="text-highlight font-medium">
-                                                {item.winrate.toFixed(1)}%
-                                            </span>
+                                            <span className="text-highlight font-medium">{pct(item.winrate)}</span>
                                         </span>
                                         <span className="text-sm text-textSecondary">
-                                            📊 Pick Rate:{" "}
-                                            <span className="font-medium">{item.pickrate.toFixed(1)}%</span>
+                                            📊 Pick Rate: <span className="font-medium">{pct(item.pickrate)}</span>
                                         </span>
                                         <span className="text-sm text-textSecondary">
                                             📍 Posição Média:{" "}
@@ -407,7 +540,7 @@ export default function ChampionPage() {
                                                 <span className="font-medium">{matchup.champion}</span>
                                                 <div className="flex gap-3 items-center">
                                                     <span className="text-green-500 font-bold">
-                                                        {matchup.winrate.toFixed(1)}%
+                                                        {pct(matchup.winrate)}
                                                     </span>
                                                     <span className="text-xs text-textSecondary">
                                                         {matchup.games} jogos
@@ -418,7 +551,6 @@ export default function ChampionPage() {
                                     </div>
                                 </div>
                             )}
-
                             {championData.matchups.difficult.length > 0 && (
                                 <div>
                                     <h3 className="text-lg font-bold mb-4 text-red-500">❌ Difíceis</h3>
@@ -431,7 +563,7 @@ export default function ChampionPage() {
                                                 <span className="font-medium">{matchup.champion}</span>
                                                 <div className="flex gap-3 items-center">
                                                     <span className="text-red-500 font-bold">
-                                                        {matchup.winrate.toFixed(1)}%
+                                                        {pct(matchup.winrate)}
                                                     </span>
                                                     <span className="text-xs text-textSecondary">
                                                         {matchup.games} jogos
@@ -445,39 +577,6 @@ export default function ChampionPage() {
                         </div>
                     </section>
                 )}
-
-            {/* SUMMONER SPELLS */}
-            {championData.summonerSpells && championData.summonerSpells.length > 0 && (
-                <section className="bg-surface p-6 rounded">
-                    <h2 className="text-xl font-bold mb-4">✨ Summoner Spells</h2>
-                    <div className="space-y-3">
-                        {championData.summonerSpells.map((spell, index) => (
-                            <div key={index} className="flex items-center gap-4 bg-background p-4 rounded">
-                                <div className="flex gap-2">
-                                    <div className="w-12 h-12 bg-accent rounded flex items-center justify-center font-bold">
-                                        {spell.spell1}
-                                    </div>
-                                    <div className="w-12 h-12 bg-accent rounded flex items-center justify-center font-bold">
-                                        {spell.spell2}
-                                    </div>
-                                </div>
-                                <div className="flex-1 flex gap-6">
-                                    <span className="text-sm text-textSecondary">
-                                        ✅ WR:{" "}
-                                        <span className="text-highlight font-medium">{spell.winrate.toFixed(1)}%</span>
-                                    </span>
-                                    <span className="text-sm text-textSecondary">
-                                        📊 PR: <span className="font-medium">{spell.pickrate.toFixed(1)}%</span>
-                                    </span>
-                                    <span className="text-sm text-textSecondary">
-                                        {spell.games.toLocaleString()} jogos
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
         </main>
     );
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ChampionTable, { ChampionRow } from "../components/Table";
 import { fetchTierList } from "../services/tierListService";
+import { EloSelector } from "../components/EloSelector";
 
 const LANES = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"] as const;
 type Lane = (typeof LANES)[number] | "ALL";
@@ -19,31 +21,56 @@ const LANE_LABELS: Record<Lane, string> = {
 const PAGE_SIZE = 20;
 
 export default function TierListPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // ✅ Lê elo e lane da URL, com defaults
+    const [elo, setEloState] = useState(searchParams.get("elo") ?? "PLATINUM");
+    const [lane, setLaneState] = useState<Lane>((searchParams.get("lane") as Lane) ?? "ALL");
+
     const [data, setData] = useState<ChampionRow[]>([]);
-    const [lane, setLane] = useState<Lane>("ALL");
     const [limit, setLimit] = useState(PAGE_SIZE);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
 
+    // ✅ Persiste elo e lane na URL
+    function setElo(newElo: string) {
+        setEloState(newElo);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("elo", newElo);
+        router.replace(`?${params.toString()}`, { scroll: false });
+    }
+
+    function setLane(newLane: Lane) {
+        setLaneState(newLane);
+        const params = new URLSearchParams(searchParams.toString());
+        if (newLane === "ALL") {
+            params.delete("lane");
+        } else {
+            params.set("lane", newLane);
+        }
+        router.replace(`?${params.toString()}`, { scroll: false });
+    }
+
     useEffect(() => {
         setLoading(true);
         setError(null);
         setLimit(PAGE_SIZE);
-        fetchTierList(PAGE_SIZE, "PLATINUM", lane === "ALL" ? undefined : lane)
+        fetchTierList(PAGE_SIZE, elo, lane === "ALL" ? undefined : lane)
             .then((rows) => {
                 setData(rows);
                 setHasMore(rows.length === PAGE_SIZE);
             })
             .catch(() => setError("Erro ao carregar tier list"))
             .finally(() => setLoading(false));
-    }, [lane]);
+    }, [lane, elo]);
 
     function handleLoadMore() {
         const nextLimit = limit + PAGE_SIZE;
         setLoadingMore(true);
-        fetchTierList(nextLimit, "PLATINUM", lane === "ALL" ? undefined : lane)
+        fetchTierList(nextLimit, elo, lane === "ALL" ? undefined : lane)
             .then((rows) => {
                 setData(rows);
                 setLimit(nextLimit);
@@ -53,32 +80,42 @@ export default function TierListPage() {
             .finally(() => setLoadingMore(false));
     }
 
+    // ✅ Redireciona para página do champion
+    function handleChampionClick(champion: ChampionRow) {
+        const name = encodeURIComponent(champion.name.toUpperCase());
+        router.push(`/champion/${name}?elo=${elo}${lane !== "ALL" ? `&lane=${lane}` : ""}`);
+    }
+
     return (
         <main className="flex flex-col gap-4">
-            <section className="flex flex-col gap-8 py-4">
+            <section className="flex flex-col gap-6 py-4">
                 <h1 className="text-4xl">Tier List</h1>
 
-                <div className="flex gap-2 flex-wrap">
-                    {(["ALL", ...LANES] as Lane[]).map((l) => (
-                        <button
-                            key={l}
-                            onClick={() => setLane(l)}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition border ${
-                                lane === l
-                                    ? "bg-accent text-white border-accent"
-                                    : "bg-surface text-textSecondary border-accent hover:text-textPrimary"
-                            }`}
-                        >
-                            {LANE_LABELS[l]}
-                        </button>
-                    ))}
+                <div className="flex flex-col gap-3">
+                    <EloSelector value={elo} onChange={setElo} />
+
+                    <div className="flex gap-2 flex-wrap">
+                        {(["ALL", ...LANES] as Lane[]).map((l) => (
+                            <button
+                                key={l}
+                                onClick={() => setLane(l)}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition border ${
+                                    lane === l
+                                        ? "bg-accent text-white border-accent"
+                                        : "bg-surface text-textSecondary border-accent hover:text-textPrimary"
+                                }`}
+                            >
+                                {LANE_LABELS[l]}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {loading && <p className="text-textSecondary">Carregando...</p>}
                 {error && <p className="text-red-500">{error}</p>}
                 {!loading && !error && (
                     <>
-                        <ChampionTable data={data} />
+                        <ChampionTable data={data} onChampionClick={handleChampionClick} />
                         {hasMore && (
                             <button
                                 onClick={handleLoadMore}

@@ -14,6 +14,8 @@ export interface ProBuild {
     assists: number;
     cs: number;
     goldEarned: number;
+    visionScore: number;
+    totalDamage: number;
     items: Array<{
         id: number;
         iconUrl: string | null;
@@ -22,11 +24,11 @@ export interface ProBuild {
         keystone: number;
         primaryStyle: number;
         secondaryStyle: number;
+        primaryPerks: number[];
+        secondaryPerks: number[];
+        statShards: number[];
     } | null;
-    summonerSpells: Array<{
-        id: number;
-        iconUrl: string | null;
-    }>;
+    summonerSpells: number[];
     patch: string;
     gameCreation: string;
     gameDuration: number;

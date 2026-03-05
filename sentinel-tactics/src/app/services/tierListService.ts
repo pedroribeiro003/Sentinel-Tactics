@@ -4,7 +4,7 @@ export interface TierListItem {
     id: string;
     name: string;
     image: string;
-    tierImage: string;
+    tier: string;
     lane: string;
     winRate: number;
     pickRate: number;
