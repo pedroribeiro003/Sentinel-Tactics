@@ -1,15 +1,12 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-    reactCompiler: true,
-    images: {
-        remotePatterns: [
-            {
-                protocol: "https",
-                hostname: "pub-ed44b012f9a14c9587020f457a4d597e.r2.dev",
-            },
-        ],
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    // Desativa Turbopack para evitar erros de ESM (como "Unexpected token 'export'")
+    // Turbopack ainda é experimental e pode não transpilhar corretamente alguns pacotes
+    experimental: {
+        turbo: false,
     },
+    // Se ainda houver erros de ESM com pacotes específicos, adicione aqui:
+    // transpilePackages: ['nome-do-pacote-problematico'], // Ex.: ['axios', 'some-icon-lib']
 };
 
-export default nextConfig;
+module.exports = nextConfig;
