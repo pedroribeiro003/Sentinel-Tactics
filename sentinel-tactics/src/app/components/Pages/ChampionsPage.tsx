@@ -1,4 +1,3 @@
-// src/app/champion/[name]/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
@@ -8,7 +7,7 @@ import { ChampionDetails } from "../../types/champions";
 import { getSummonerSpellIcon, getRuneIcon } from "../../utils/ddragon";
 
 // =====================================================
-// LANE ICONS (SVG estilo LoL)
+// LANE ICONS
 // =====================================================
 const LaneIcon = ({ lane, active }: { lane: string; active: boolean }) => {
     const color = active ? "#fff" : "#8fa3b1";
@@ -183,9 +182,9 @@ export default function ChampionPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const championName = params.name as string;
-    const elo = searchParams.get("elo") || "PLATINUM";
-    const lane = searchParams.get("lane") || "ALL";
+    const championName = params?.name as string;
+    const elo = searchParams?.get("elo") || "PLATINUM";
+    const lane = searchParams?.get("lane") || "ALL";
 
     const [championData, setChampionData] = useState<ChampionDetails | null>(null);
     const [loading, setLoading] = useState(true);
@@ -207,8 +206,9 @@ export default function ChampionPage() {
                     lane: lane === "ALL" ? undefined : lane,
                 });
                 setChampionData(data);
-            } catch (err: any) {
-                setError(err.message || "Erro ao buscar dados do campeão");
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Erro ao buscar dados do campeão";
+                setError(message);
                 setChampionData(null);
             } finally {
                 setLoading(false);
@@ -220,12 +220,15 @@ export default function ChampionPage() {
     const handleLaneChange = (newLane: string) => router.push(`/champion/${championName}?elo=${elo}&lane=${newLane}`);
     const handleEloChange = (newElo: string) => router.push(`/champion/${championName}?elo=${newElo}&lane=${lane}`);
 
+    const pct = (value: number | null | undefined) => (value != null ? `${value.toFixed(1)}%` : "N/A");
+
     if (loading)
         return (
             <main className="p-4 flex justify-center items-center min-h-screen">
                 <div className="text-2xl">Carregando dados do campeão...</div>
             </main>
         );
+
     if (error)
         return (
             <main className="p-4 flex flex-col items-center justify-center min-h-screen gap-4">
@@ -235,6 +238,7 @@ export default function ChampionPage() {
                 </Button>
             </main>
         );
+
     if (!championData)
         return (
             <main className="p-4 flex flex-col items-center justify-center min-h-screen gap-4">
@@ -246,7 +250,6 @@ export default function ChampionPage() {
         );
 
     const currentLane = LANES.find((l) => l.value === lane);
-    const pct = (value: number | null) => (value != null ? `${value.toFixed(1)}%` : "N/A");
 
     return (
         <main className="p-4 flex flex-col gap-8">
@@ -324,7 +327,7 @@ export default function ChampionPage() {
                 <StatCard
                     label="Win Rate"
                     value={pct(championData.performance.winrate)}
-                    highlight={(championData.performance.winrate || 0) >= 50}
+                    highlight={(championData.performance.winrate ?? 0) >= 50}
                 />
                 <StatCard label="Pick Rate" value={pct(championData.performance.pickrate)} />
                 <StatCard label="Ban Rate" value={pct(championData.performance.banrate)} />
@@ -350,12 +353,11 @@ export default function ChampionPage() {
                                 <RuneIcon id={championData.runes[0].primary.style} size={8} ring={false} />
                                 <h3 className="font-bold text-lg">Primary Tree</h3>
                             </div>
-                            {/* Keystone */}
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-16 h-16 rounded-full ring-2 ring-yellow-500 overflow-hidden flex items-center justify-center bg-accent flex-shrink-0">
                                     {getRuneIcon(championData.runes[0].primary.keystone) ? (
                                         <img
-                                            src={getRuneIcon(championData.runes[0].primary.keystone)}
+                                            src={getRuneIcon(championData.runes[0].primary.keystone)!}
                                             alt="Keystone"
                                             className="w-full h-full object-contain"
                                         />
@@ -367,7 +369,6 @@ export default function ChampionPage() {
                                 </div>
                                 <span className="text-sm font-medium text-textSecondary">Keystone</span>
                             </div>
-                            {/* Perks */}
                             <div className="flex flex-col gap-3">
                                 {championData.runes[0].primary.perks.map((perkId, index) => (
                                     <div key={index} className="flex items-center gap-3">
