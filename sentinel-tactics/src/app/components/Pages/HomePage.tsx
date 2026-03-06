@@ -42,7 +42,7 @@ export default function HomePage({ searchParams }: Props) {
     }
 
     function handleChampionClick(champion: ChampionRow) {
-        const name = encodeURIComponent(champion.name.toUpperCase());
+        const name = encodeURIComponent(champion.name);
         router.push(`/champion/${name}?elo=${elo}`);
     }
 
