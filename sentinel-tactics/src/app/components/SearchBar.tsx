@@ -1,4 +1,3 @@
-// components/SearchBar.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -67,7 +66,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     }, []);
 
     const navigateToChampion = (championName: string) => {
-        console.log("🔍 Navegando para campeão:", championName);
         router.push(`/champion/${encodeURIComponent(championName)}`);
         setShowSuggestions(false);
         setSearchQuery("");
@@ -90,7 +88,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 return;
             }
             onSearch?.(`${playerName}#${playerTag}`, region);
-            console.log("🔍 Navegando para jogador:", playerName, playerTag, "na região", region);
             router.push(`/player/${encodeURIComponent(playerName)}/${encodeURIComponent(playerTag)}?region=${region}`);
             setShowSuggestions(false);
         } else {
@@ -128,13 +125,13 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     };
 
     return (
-        <div ref={searchRef} className="relative">
-            <form onSubmit={handleSubmit} className="flex items-center gap-2">
-                {/* REGIÃO — sempre visível */}
+        <div ref={searchRef} className="relative w-full">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
+                {/* REGIÃO */}
                 <select
                     value={region}
                     onChange={(e) => setRegion(e.target.value)}
-                    className="px-3 py-2 bg-background text-textPrimary rounded-lg border-2 border-highlight focus:outline-none focus:border-accent"
+                    className="px-2 py-2 bg-background text-textPrimary rounded-lg border-2 border-highlight focus:outline-none focus:border-accent text-sm flex-shrink-0"
                 >
                     <option value="br1">🇧🇷 BR</option>
                     <option value="na1">🇺🇸 NA</option>
@@ -155,7 +152,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 </select>
 
                 {/* INPUT */}
-                <div className="relative">
+                <div className="relative flex-1">
                     <input
                         type="text"
                         placeholder="Campeão ou Jogador#Tag"
@@ -168,7 +165,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                         onFocus={() => {
                             if (suggestions.length > 0) setShowSuggestions(true);
                         }}
-                        className="px-4 py-2 bg-background text-textPrimary rounded-lg border-2 border-highlight focus:outline-none focus:border-accent w-80 placeholder:text-textSecondary"
+                        className="w-full px-3 py-2 bg-background text-textPrimary rounded-lg border-2 border-highlight focus:outline-none focus:border-accent placeholder:text-textSecondary text-sm"
                     />
                     {isLoadingChampions && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -179,37 +176,34 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
                 <button
                     type="submit"
-                    className="px-6 py-2 bg-highlight text-background font-bold rounded-lg hover:bg-accent transition-all hover:scale-105"
+                    className="px-3 py-2 bg-highlight text-background font-bold rounded-lg hover:bg-accent transition-all text-sm flex-shrink-0"
                 >
                     🔍
                 </button>
             </form>
 
-            {/* SUGESTÕES DE CHAMPION */}
+            {/* SUGESTÕES */}
             {showSuggestions && suggestions.length > 0 && (
-                <div
-                    className="absolute top-full mt-2 w-80 bg-surface border-2 border-highlight rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
-                    style={{ left: "calc(100% - 320px - 52px)" }}
-                >
+                <div className="absolute top-full mt-2 w-full bg-surface border-2 border-highlight rounded-lg shadow-xl z-50 max-h-72 overflow-y-auto">
                     {suggestions.map((champion, index) => (
                         <button
                             key={champion.id}
                             type="button"
                             onClick={() => navigateToChampion(champion.name)}
                             onMouseEnter={() => setSelectedIndex(index)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-accent transition ${
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-accent transition ${
                                 index === selectedIndex ? "bg-accent" : ""
                             }`}
                         >
                             <img
                                 src={champion.image || "/placeholder-champion.png"}
                                 alt={champion.name}
-                                className="w-10 h-10 rounded-full border-2 border-highlight object-cover"
+                                className="w-8 h-8 rounded-full border-2 border-highlight object-cover flex-shrink-0"
                                 onError={(e) => {
                                     e.currentTarget.src = "/placeholder-champion.png";
                                 }}
                             />
-                            <span className="text-textPrimary font-medium">{champion.name}</span>
+                            <span className="text-textPrimary font-medium text-sm truncate">{champion.name}</span>
                         </button>
                     ))}
                 </div>

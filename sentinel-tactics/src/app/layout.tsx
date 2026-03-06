@@ -16,23 +16,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
-            <body className={`${exo.className} bg-background`}>
+        <html lang="en" className="overflow-x-hidden">
+            <body className={`${exo.className} bg-background overflow-x-hidden`}>
                 <Header />
 
-                {/* CONTAINER que limita o sticky */}
-                <div className="flex justify-center px-4">
-                    {/* Ad esquerdo */}
+                <div className="flex justify-center px-2 sm:px-4">
                     <aside className="hidden xl:block w-[160px] mr-6">
                         <div className="sticky top-28 h-[600px] bg-surface flex items-center justify-center text-xs text-textSecondary">
                             AD
                         </div>
                     </aside>
 
-                    {/* Conteúdo */}
-                    <main className="w-full max-w-[1100px]">{children}</main>
+                    <main className="w-full max-w-[1100px] min-w-0 overflow-x-hidden">{children}</main>
 
-                    {/* Ad direito */}
                     <aside className="hidden xl:block w-[160px] ml-6">
                         <div className="sticky top-28 h-[600px] bg-surface flex items-center justify-center text-xs text-textSecondary">
                             AD
@@ -40,8 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </aside>
                 </div>
 
-                {/* FOOTER fora do container */}
-                <footer className="mt-24 border-t border-accent py-8 text-center text-sm text-textSecondary">
+                <footer className="mt-12 sm:mt-24 border-t border-accent py-6 sm:py-8 text-center text-xs sm:text-sm text-textSecondary">
                     © {new Date().getFullYear()} Sentinel Tactics
                 </footer>
             </body>

@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "next/image";
+
 // =====================================================
 // TIER SVG
 // =====================================================
@@ -81,7 +81,6 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
             return `${cx + radius * Math.cos(a)},${cy + radius * Math.sin(a)}`;
         }).join(" ");
 
-    // Shape principal por tier
     const Shape = ({ fill, stroke, strokeWidth }: { fill: string; stroke: string; strokeWidth: number }) => {
         if (tier === "S")
             return <polygon points={hexPoints(r)} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />;
@@ -110,7 +109,6 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
         return <circle cx={cx} cy={cy} r={r} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />;
     };
 
-    // Shine overlay (mesma shape sem stroke)
     const ShineShape = ({ fill }: { fill: string }) => {
         if (tier === "S") return <polygon points={hexPoints(r)} fill={fill} stroke="none" />;
         if (tier === "A")
@@ -160,20 +158,13 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
                     </radialGradient>
                 )}
             </defs>
-
-            {/* Shape base com glow */}
             <g filter={cfg.glow ? `url(#${glowId})` : undefined}>
                 <Shape fill={`url(#${gradId})`} stroke={cfg.stroke} strokeWidth={s * 0.03} />
             </g>
-
-            {/* Shine */}
             {cfg.innerDetail && <ShineShape fill={`url(#${shineId})`} />}
-
-            {/* Borda interna S */}
             {tier === "S" && (
                 <polygon points={hexPoints(r * 0.6)} fill="none" stroke="white" strokeWidth={s * 0.015} opacity="0.2" />
             )}
-            {/* Borda interna A */}
             {tier === "A" && (
                 <polygon
                     points={`${cx},${cy - r * 0.55} ${cx + r * 0.42},${cy} ${cx},${cy + r * 0.55} ${
@@ -185,8 +176,6 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
                     opacity="0.2"
                 />
             )}
-
-            {/* Letra */}
             <text
                 x={cx}
                 y={cy + s * 0.13}
@@ -200,8 +189,6 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
             >
                 {tier}
             </text>
-
-            {/* Ponto de luz S e A */}
             {(tier === "S" || tier === "A") && (
                 <circle cx={cx - r * 0.2} cy={cy - r * 0.45} r={s * 0.045} fill="white" opacity="0.7" />
             )}
@@ -210,7 +197,7 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
 };
 
 // =====================================================
-// TABELA
+// TYPES
 // =====================================================
 export type ChampionRow = {
     id: string;
@@ -230,55 +217,115 @@ type ChampionTableProps = {
     onChampionClick?: (champion: ChampionRow) => void;
 };
 
+// =====================================================
+// TABELA
+// =====================================================
 export default function ChampionTable({ data, onChampionClick }: ChampionTableProps) {
     return (
-        <div className="overflow-hidden rounded-lg border border-accent">
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 bg-surface px-4 py-3 text-sm text-textSecondary">
-                <span>Champion</span>
-                <span>Lane</span>
-                <span>Tier</span>
-                <span>Taxa de Vitória</span>
-                <span>Taxa de Escolha</span>
-                <span>Taxa de Banimento</span>
-                <span>Jogos</span>
+        <>
+            {/* DESKTOP — tabela normal */}
+            <div className="hidden sm:block overflow-hidden rounded-lg border border-accent">
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 bg-surface px-4 py-3 text-sm text-textSecondary">
+                    <span>Champion</span>
+                    <span>Lane</span>
+                    <span>Tier</span>
+                    <span>Taxa de Vitória</span>
+                    <span>Taxa de Escolha</span>
+                    <span>Taxa de Banimento</span>
+                    <span>Jogos</span>
+                </div>
+                <div className="divide-y divide-accent/40">
+                    {Array.isArray(data) &&
+                        data.map((champion, index) => (
+                            <div
+                                key={`${champion.id}-${index}`}
+                                onClick={() => onChampionClick?.(champion)}
+                                className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-4 px-4 py-4 hover:bg-surface/60 transition ${
+                                    onChampionClick ? "cursor-pointer" : ""
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <img
+                                        src={champion.image}
+                                        alt={champion.name}
+                                        className="w-10 h-10 rounded object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = "/placeholder-champion.png";
+                                        }}
+                                    />
+                                    <span className="font-medium">{champion.name}</span>
+                                </div>
+                                <span className="text-sm text-textSecondary capitalize">{champion.lane}</span>
+                                <div className="flex items-center">
+                                    <TierSVG tier={champion.tier ?? champion.tierImage ?? ""} size={36} />
+                                </div>
+                                <span>{(champion.winRate * 100).toFixed(2)}%</span>
+                                <span>{(champion.pickRate * 100).toFixed(2)}%</span>
+                                <span>{(champion.banRate * 100).toFixed(2)}%</span>
+                                <span>{champion.games.toLocaleString()}</span>
+                            </div>
+                        ))}
+                </div>
             </div>
 
-            <div className="divide-y divide-accent/40">
+            {/* MOBILE — cards */}
+            <div className="sm:hidden flex flex-col gap-3">
                 {Array.isArray(data) &&
                     data.map((champion, index) => (
                         <div
-                            key={`${champion.id}-${index}`}
+                            key={`${champion.id}-${index}-mobile`}
                             onClick={() => onChampionClick?.(champion)}
-                            className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-4 px-4 py-4 hover:bg-surface/60 transition ${
-                                onChampionClick ? "cursor-pointer" : ""
+                            className={`bg-surface rounded-lg border border-accent/40 p-3 flex items-center gap-3 ${
+                                onChampionClick ? "cursor-pointer active:bg-accent/20" : ""
                             }`}
                         >
-                            <div className="flex items-center gap-3">
-                                {/* Trocar Image por img para compatibilidade com imagens externas */}
+                            {/* Avatar + Tier */}
+                            <div className="relative flex-shrink-0">
                                 <img
                                     src={champion.image}
                                     alt={champion.name}
-                                    className="w-10 h-10 rounded object-cover"
+                                    className="w-14 h-14 rounded-lg object-cover border-2 border-accent"
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).src = "/placeholder-champion.png";
                                     }}
                                 />
-                                <span className="font-medium">{champion.name}</span>
+                                <div className="absolute -bottom-1 -right-1">
+                                    <TierSVG tier={champion.tier ?? champion.tierImage ?? ""} size={22} />
+                                </div>
                             </div>
 
-                            <span className="text-sm text-textSecondary capitalize">{champion.lane}</span>
-
-                            <div className="flex items-center">
-                                <TierSVG tier={champion.tier ?? champion.tierImage ?? ""} size={36} />
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold text-textPrimary truncate">{champion.name}</span>
+                                    <span className="text-xs text-textSecondary capitalize ml-2 flex-shrink-0">
+                                        {champion.lane}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1 mt-1.5">
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-textSecondary">Win</span>
+                                        <span className="text-sm font-semibold text-highlight">
+                                            {(champion.winRate * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-textSecondary">Pick</span>
+                                        <span className="text-sm font-semibold">
+                                            {(champion.pickRate * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-textSecondary">Ban</span>
+                                        <span className="text-sm font-semibold">
+                                            {(champion.banRate * 100).toFixed(1)}%
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-
-                            <span>{(champion.winRate * 100).toFixed(2)}%</span>
-                            <span>{(champion.pickRate * 100).toFixed(2)}%</span>
-                            <span>{(champion.banRate * 100).toFixed(2)}%</span>
-                            <span>{champion.games.toLocaleString()}</span>
                         </div>
                     ))}
             </div>
-        </div>
+        </>
     );
 }

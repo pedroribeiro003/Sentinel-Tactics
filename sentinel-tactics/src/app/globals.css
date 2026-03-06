@@ -2,7 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
     background-color: #0b0e14;
     color: #e6e8ec;
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+* {
+    box-sizing: border-box;
 }
