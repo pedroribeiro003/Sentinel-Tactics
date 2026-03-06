@@ -375,7 +375,7 @@ export default function ChampionPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const championName = params?.name as string;
+    const championName = decodeURIComponent(params?.name as string);
     const elo = searchParams?.get("elo") || "PLATINUM";
     const lane = searchParams?.get("lane") || "ALL";
 
