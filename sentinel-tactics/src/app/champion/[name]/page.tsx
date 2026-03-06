@@ -1,10 +1,16 @@
 import { Suspense } from "react";
-import ChampionPage from "../../components/Pages/ChampionsPage";
+import TierListPage from "../../components/Pages/TierListPage";
 
-export default function Page() {
+export default async function Page({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+    const resolvedSearchParams = await searchParams;
+
     return (
         <Suspense fallback={<div className="p-4 text-center">Carregando...</div>}>
-            <ChampionPage />
+            <TierListPage searchParams={resolvedSearchParams} />
         </Suspense>
     );
 }

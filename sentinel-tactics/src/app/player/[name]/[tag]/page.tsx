@@ -1,11 +1,18 @@
+import { Suspense } from "react";
 import PlayerPage from "../../../components/Pages/PlayerPage";
 
-export default function Page({
+export default async function Page({
     params,
     searchParams,
 }: {
-    params: { name: string; tag: string };
-    searchParams: { [key: string]: string | string[] | undefined };
+    params: Promise<{ name: string; tag: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-    return <PlayerPage params={params} searchParams={searchParams} />;
+    const resolvedParams = await params;
+    const resolvedSearchParams = await searchParams;
+    return (
+        <Suspense fallback={<div className="p-4 text-center">Carregando...</div>}>
+            <PlayerPage params={resolvedParams} searchParams={resolvedSearchParams} />
+        </Suspense>
+    );
 }
