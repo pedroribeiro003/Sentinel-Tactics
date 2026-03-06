@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import ChampionTable, { ChampionRow } from "../components/Table";
-import { fetchTierList } from "../services/tierListService";
-import { EloSelector } from "../components/EloSelector";
+import ChampionTable, { ChampionRow } from "../Table";
+import { fetchTierList } from "../../services/tierListService";
+import { EloSelector } from "../EloSelector";
 
 const LANES = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"] as const;
 type Lane = (typeof LANES)[number] | "ALL";

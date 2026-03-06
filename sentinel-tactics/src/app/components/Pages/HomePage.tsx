@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import ChampionTable, { ChampionRow } from "../components/Table";
-import { fetchTierList } from "../services/tierListService";
-import { EloSelector } from "../components/EloSelector";
+import ChampionTable, { ChampionRow } from "../Table";
+import { fetchTierList } from "../../services/tierListService";
+import { EloSelector } from "../EloSelector";
 
 interface Props {
     searchParams: { [key: string]: string | string[] | undefined };
