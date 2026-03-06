@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Desativa Turbopack para evitar erros de ESM (como "Unexpected token 'export'")
-    // Turbopack ainda é experimental e pode não transpilhar corretamente alguns pacotes
     experimental: {
-        turbo: false,
+        turbo: false, // Desativa Turbopack
     },
-    // Se ainda houver erros de ESM com pacotes específicos, adicione aqui:
-    // transpilePackages: ['nome-do-pacote-problematico'], // Ex.: ['axios', 'some-icon-lib']
+    images: {
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // Garanta arrays
+        imageSizes: [32, 48, 64, 96, 128, 256, 384],
+        qualities: [75],
+    },
 };
-
 module.exports = nextConfig;
