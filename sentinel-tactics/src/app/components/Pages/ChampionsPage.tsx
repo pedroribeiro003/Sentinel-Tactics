@@ -1,4 +1,4 @@
-// app/champion/[name]/page.tsx
+// src/app/champion/[name]/page.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
@@ -183,8 +183,6 @@ export default function ChampionPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    console.log("ChampionPage component loaded for params.name:", params.name);
-
     const championName = params.name as string;
     const elo = searchParams.get("elo") || "PLATINUM";
     const lane = searchParams.get("lane") || "ALL";
@@ -194,10 +192,8 @@ export default function ChampionPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log("ChampionPage useEffect triggered for championName:", championName, "elo:", elo, "lane:", lane);
         async function loadChampionDetails() {
             if (!championName) {
-                console.log("ChampionPage: No championName, setting error");
                 setError("Nome do campeão não encontrado na URL");
                 setLoading(false);
                 return;
@@ -205,16 +201,13 @@ export default function ChampionPage() {
             setLoading(true);
             setError(null);
             try {
-                console.log("ChampionPage: Calling fetchChampionDetails");
                 const data = await fetchChampionDetails({
                     name: championName,
                     elo,
                     lane: lane === "ALL" ? undefined : lane,
                 });
-                console.log("ChampionPage fetch success:", data);
                 setChampionData(data);
             } catch (err: any) {
-                console.log("ChampionPage fetch error:", err);
                 setError(err.message || "Erro ao buscar dados do campeão");
                 setChampionData(null);
             } finally {
