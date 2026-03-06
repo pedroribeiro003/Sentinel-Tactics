@@ -1,11 +1,15 @@
+// app/champion/[name]/page.tsx
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Button } from "../../components/Button";
 import { fetchChampionDetails } from "../../services/championsService";
 import { ChampionDetails } from "../../types/champions";
 import { getSummonerSpellIcon, getRuneIcon } from "../../utils/ddragon";
 
+// =====================================================
+// LANE ICONS (SVG estilo LoL)
+// =====================================================
 const LaneIcon = ({ lane, active }: { lane: string; active: boolean }) => {
     const color = active ? "#fff" : "#8fa3b1";
     const size = 22;
@@ -93,6 +97,9 @@ const LANES = [
     { value: "UTILITY", label: "Support" },
 ];
 
+// =====================================================
+// STAT CARD
+// =====================================================
 function StatCard({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
     return (
         <div className={`bg-surface p-6 rounded ${highlight ? "border-2 border-highlight" : ""}`}>
@@ -102,6 +109,9 @@ function StatCard({ label, value, highlight = false }: { label: string; value: s
     );
 }
 
+// =====================================================
+// ITEM ICON
+// =====================================================
 function ItemIcon({ itemId, icon_url, name }: { itemId: number; icon_url?: string | null; name?: string }) {
     return (
         <div className="relative group">
@@ -128,6 +138,9 @@ function ItemIcon({ itemId, icon_url, name }: { itemId: number; icon_url?: strin
     );
 }
 
+// =====================================================
+// RUNE ICON
+// =====================================================
 function RuneIcon({ id, size = 12, ring = true }: { id: number; size?: number; ring?: boolean }) {
     const url = getRuneIcon(id);
     const sizeClass = `w-${size} h-${size}`;
@@ -146,6 +159,9 @@ function RuneIcon({ id, size = 12, ring = true }: { id: number; size?: number; r
     );
 }
 
+// =====================================================
+// SPELL ICON
+// =====================================================
 function SpellIcon({ spellId }: { spellId: number }) {
     const url = getSummonerSpellIcon(spellId);
     return (
@@ -159,33 +175,29 @@ function SpellIcon({ spellId }: { spellId: number }) {
     );
 }
 
-interface Props {
-    params: { name: string };
-    searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default function ChampionPage({ params, searchParams }: Props) {
+// =====================================================
+// MAIN PAGE
+// =====================================================
+export default function ChampionPage() {
+    const params = useParams();
+    const searchParams = useSearchParams();
     const router = useRouter();
 
-    const championName = decodeURIComponent(params.name);
-    const elo = searchParams.elo
-        ? Array.isArray(searchParams.elo)
-            ? searchParams.elo[0]
-            : searchParams.elo
-        : "PLATINUM";
-    const lane = searchParams.lane
-        ? Array.isArray(searchParams.lane)
-            ? searchParams.lane[0]
-            : searchParams.lane
-        : "ALL";
+    console.log("ChampionPage component loaded for params.name:", params.name);
+
+    const championName = params.name as string;
+    const elo = searchParams.get("elo") || "PLATINUM";
+    const lane = searchParams.get("lane") || "ALL";
 
     const [championData, setChampionData] = useState<ChampionDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        console.log("ChampionPage useEffect triggered for championName:", championName, "elo:", elo, "lane:", lane);
         async function loadChampionDetails() {
             if (!championName) {
+                console.log("ChampionPage: No championName, setting error");
                 setError("Nome do campeão não encontrado na URL");
                 setLoading(false);
                 return;
@@ -193,13 +205,16 @@ export default function ChampionPage({ params, searchParams }: Props) {
             setLoading(true);
             setError(null);
             try {
+                console.log("ChampionPage: Calling fetchChampionDetails");
                 const data = await fetchChampionDetails({
                     name: championName,
                     elo,
                     lane: lane === "ALL" ? undefined : lane,
                 });
+                console.log("ChampionPage fetch success:", data);
                 setChampionData(data);
             } catch (err: any) {
+                console.log("ChampionPage fetch error:", err);
                 setError(err.message || "Erro ao buscar dados do campeão");
                 setChampionData(null);
             } finally {
@@ -209,30 +224,8 @@ export default function ChampionPage({ params, searchParams }: Props) {
         loadChampionDetails();
     }, [championName, elo, lane]);
 
-    const handleLaneChange = (newLane: string) => {
-        const params = new URLSearchParams();
-        Object.entries(searchParams).forEach(([key, value]) => {
-            if (Array.isArray(value)) {
-                value.forEach((v) => params.append(key, v));
-            } else if (value) {
-                params.set(key, value);
-            }
-        });
-        params.set("lane", newLane);
-        router.push(`/champion/${championName}?${params.toString()}`);
-    };
-    const handleEloChange = (newElo: string) => {
-        const params = new URLSearchParams();
-        Object.entries(searchParams).forEach(([key, value]) => {
-            if (Array.isArray(value)) {
-                value.forEach((v) => params.append(key, v));
-            } else if (value) {
-                params.set(key, value);
-            }
-        });
-        params.set("elo", newElo);
-        router.push(`/champion/${championName}?${params.toString()}`);
-    };
+    const handleLaneChange = (newLane: string) => router.push(`/champion/${championName}?elo=${elo}&lane=${newLane}`);
+    const handleEloChange = (newElo: string) => router.push(`/champion/${championName}?elo=${newElo}&lane=${lane}`);
 
     if (loading)
         return (
@@ -264,6 +257,7 @@ export default function ChampionPage({ params, searchParams }: Props) {
 
     return (
         <main className="p-4 flex flex-col gap-8">
+            {/* HEADER */}
             <section className="flex flex-row gap-4 bg-surface p-4 items-center">
                 <div className="w-32 h-32 flex-shrink-0">
                     <img
@@ -298,25 +292,25 @@ export default function ChampionPage({ params, searchParams }: Props) {
                     </div>
                 </div>
 
+                {/* LANE SELECTOR */}
                 <div className="flex flex-col gap-2">
                     <span className="text-xs text-textSecondary text-center">Trocar Lane:</span>
                     <div className="flex gap-1">
-                        {Array.isArray(LANES) &&
-                            LANES.map((l) => {
-                                const active = lane === l.value;
-                                return (
-                                    <button
-                                        key={l.value}
-                                        onClick={() => handleLaneChange(l.value)}
-                                        title={l.label}
-                                        className={`w-10 h-10 rounded flex items-center justify-center transition ${
-                                            active ? "bg-highlight" : "bg-background hover:bg-accent"
-                                        }`}
-                                    >
-                                        <LaneIcon lane={l.value} active={active} />
-                                    </button>
-                                );
-                            })}
+                        {LANES.map((l) => {
+                            const active = lane === l.value;
+                            return (
+                                <button
+                                    key={l.value}
+                                    onClick={() => handleLaneChange(l.value)}
+                                    title={l.label}
+                                    className={`w-10 h-10 rounded flex items-center justify-center transition ${
+                                        active ? "bg-highlight" : "bg-background hover:bg-accent"
+                                    }`}
+                                >
+                                    <LaneIcon lane={l.value} active={active} />
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -332,6 +326,7 @@ export default function ChampionPage({ params, searchParams }: Props) {
                 )}
             </section>
 
+            {/* ESTATÍSTICAS */}
             <section className="grid grid-cols-4 gap-4">
                 <StatCard
                     label="Win Rate"
@@ -343,7 +338,8 @@ export default function ChampionPage({ params, searchParams }: Props) {
                 <StatCard label="Partidas" value={championData.performance.games.toLocaleString()} />
             </section>
 
-            {championData.runes && Array.isArray(championData.runes) && championData.runes.length > 0 && (
+            {/* RUNAS */}
+            {championData.runes && championData.runes.length > 0 && (
                 <section className="bg-surface p-6 rounded">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold">🔮 Runas Recomendadas</h2>
@@ -355,11 +351,13 @@ export default function ChampionPage({ params, searchParams }: Props) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
+                        {/* PRIMARY */}
                         <div className="bg-background p-4 rounded border-2 border-accent">
                             <div className="flex items-center gap-3 mb-4">
                                 <RuneIcon id={championData.runes[0].primary.style} size={8} ring={false} />
                                 <h3 className="font-bold text-lg">Primary Tree</h3>
                             </div>
+                            {/* Keystone */}
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-16 h-16 rounded-full ring-2 ring-yellow-500 overflow-hidden flex items-center justify-center bg-accent flex-shrink-0">
                                     {getRuneIcon(championData.runes[0].primary.keystone) ? (
@@ -376,83 +374,79 @@ export default function ChampionPage({ params, searchParams }: Props) {
                                 </div>
                                 <span className="text-sm font-medium text-textSecondary">Keystone</span>
                             </div>
+                            {/* Perks */}
                             <div className="flex flex-col gap-3">
-                                {championData.runes[0].primary.perks &&
-                                    Array.isArray(championData.runes[0].primary.perks) &&
-                                    championData.runes[0].primary.perks.map((perkId, index) => (
-                                        <div key={index} className="flex items-center gap-3">
-                                            <RuneIcon id={perkId} size={10} />
-                                            <span className="text-sm text-textSecondary">Perk {index + 1}</span>
-                                        </div>
-                                    ))}
+                                {championData.runes[0].primary.perks.map((perkId, index) => (
+                                    <div key={index} className="flex items-center gap-3">
+                                        <RuneIcon id={perkId} size={10} />
+                                        <span className="text-sm text-textSecondary">Perk {index + 1}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
+                        {/* SECONDARY */}
                         <div className="bg-background p-4 rounded border-2 border-accent/50">
                             <div className="flex items-center gap-3 mb-4">
                                 <RuneIcon id={championData.runes[0].secondary.style} size={8} ring={false} />
                                 <h3 className="font-bold text-lg">Secondary Tree</h3>
                             </div>
                             <div className="flex flex-col gap-3 mt-6">
-                                {championData.runes[0].secondary.perks &&
-                                    Array.isArray(championData.runes[0].secondary.perks) &&
-                                    championData.runes[0].secondary.perks.map((perkId, index) => (
-                                        <div key={index} className="flex items-center gap-3">
-                                            <RuneIcon id={perkId} size={10} />
-                                            <span className="text-sm text-textSecondary">Perk {index + 1}</span>
-                                        </div>
-                                    ))}
+                                {championData.runes[0].secondary.perks.map((perkId, index) => (
+                                    <div key={index} className="flex items-center gap-3">
+                                        <RuneIcon id={perkId} size={10} />
+                                        <span className="text-sm text-textSecondary">Perk {index + 1}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
 
+                    {/* STAT SHARDS */}
                     <div className="mt-6 bg-background p-4 rounded">
                         <h4 className="font-bold mb-3 text-center">Fragmentos de Estatística</h4>
                         <div className="flex justify-center gap-8">
-                            {championData.runes[0].statShards &&
-                                Array.isArray(championData.runes[0].statShards) &&
-                                championData.runes[0].statShards.map((shardId, index) => (
-                                    <div key={index} className="flex flex-col items-center gap-2">
-                                        <RuneIcon id={shardId} size={10} />
-                                        <span className="text-xs text-textSecondary">Shard {index + 1}</span>
-                                    </div>
-                                ))}
+                            {championData.runes[0].statShards.map((shardId, index) => (
+                                <div key={index} className="flex flex-col items-center gap-2">
+                                    <RuneIcon id={shardId} size={10} />
+                                    <span className="text-xs text-textSecondary">Shard {index + 1}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </section>
             )}
 
-            {championData.summonerSpells &&
-                Array.isArray(championData.summonerSpells) &&
-                championData.summonerSpells.length > 0 && (
-                    <section className="bg-surface p-6 rounded">
-                        <h2 className="text-xl font-bold mb-4">✨ Summoner Spells</h2>
-                        <div className="space-y-3">
-                            {championData.summonerSpells.map((spell, index) => (
-                                <div key={index} className="flex items-center gap-4 bg-background p-4 rounded">
-                                    <div className="flex gap-2">
-                                        <SpellIcon spellId={spell.spell1} />
-                                        <SpellIcon spellId={spell.spell2} />
-                                    </div>
-                                    <div className="flex-1 flex gap-6">
-                                        <span className="text-sm text-textSecondary">
-                                            ✅ WR:{" "}
-                                            <span className="text-highlight font-medium">{pct(spell.winrate)}</span>
-                                        </span>
-                                        <span className="text-sm text-textSecondary">
-                                            📊 PR: <span className="font-medium">{pct(spell.pickrate)}</span>
-                                        </span>
-                                        <span className="text-sm text-textSecondary">
-                                            {spell.games.toLocaleString()} jogos
-                                        </span>
-                                    </div>
+            {/* SUMMONER SPELLS */}
+            {championData.summonerSpells && championData.summonerSpells.length > 0 && (
+                <section className="bg-surface p-6 rounded">
+                    <h2 className="text-xl font-bold mb-4">✨ Summoner Spells</h2>
+                    <div className="space-y-3">
+                        {championData.summonerSpells.map((spell, index) => (
+                            <div key={index} className="flex items-center gap-4 bg-background p-4 rounded">
+                                <div className="flex gap-2">
+                                    <SpellIcon spellId={spell.spell1} />
+                                    <SpellIcon spellId={spell.spell2} />
                                 </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                                <div className="flex-1 flex gap-6">
+                                    <span className="text-sm text-textSecondary">
+                                        ✅ WR: <span className="text-highlight font-medium">{pct(spell.winrate)}</span>
+                                    </span>
+                                    <span className="text-sm text-textSecondary">
+                                        📊 PR: <span className="font-medium">{pct(spell.pickrate)}</span>
+                                    </span>
+                                    <span className="text-sm text-textSecondary">
+                                        {spell.games.toLocaleString()} jogos
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
-            {championData.builds && Array.isArray(championData.builds) && championData.builds.length > 0 && (
+            {/* BUILDS */}
+            {championData.builds && championData.builds.length > 0 && (
                 <section className="bg-surface p-6 rounded">
                     <h2 className="text-xl font-bold mb-4">🏆 Melhores Builds Completas</h2>
                     <div className="space-y-4">
@@ -484,11 +478,9 @@ export default function ChampionPage({ params, searchParams }: Props) {
                                     )}
                                 </div>
                                 <div className="flex gap-2 items-center">
-                                    {build.items &&
-                                        Array.isArray(build.items) &&
-                                        build.items.map((item, itemIndex) => (
-                                            <ItemIcon key={itemIndex} itemId={item.itemId} icon_url={item.icon_url} />
-                                        ))}
+                                    {build.items.map((item, itemIndex) => (
+                                        <ItemIcon key={itemIndex} itemId={item.itemId} icon_url={item.icon_url} />
+                                    ))}
                                 </div>
                             </div>
                         ))}
@@ -496,7 +488,8 @@ export default function ChampionPage({ params, searchParams }: Props) {
                 </section>
             )}
 
-            {championData.items && Array.isArray(championData.items) && championData.items.length > 0 && (
+            {/* ITEMS INDIVIDUAIS */}
+            {championData.items && championData.items.length > 0 && (
                 <section className="bg-surface p-6 rounded">
                     <h2 className="text-xl font-bold mb-4">📦 Melhores Items Individuais</h2>
                     <div className="space-y-3">
@@ -536,60 +529,58 @@ export default function ChampionPage({ params, searchParams }: Props) {
                 </section>
             )}
 
+            {/* MATCHUPS */}
             {championData.matchups &&
-                ((Array.isArray(championData.matchups.favorable) && championData.matchups.favorable.length > 0) ||
-                    (Array.isArray(championData.matchups.difficult) && championData.matchups.difficult.length > 0)) && (
+                (championData.matchups.favorable.length > 0 || championData.matchups.difficult.length > 0) && (
                     <section className="bg-surface p-6 rounded">
                         <h2 className="text-xl font-bold mb-4">⚔️ Matchups</h2>
                         <div className="grid grid-cols-2 gap-8">
-                            {Array.isArray(championData.matchups.favorable) &&
-                                championData.matchups.favorable.length > 0 && (
-                                    <div>
-                                        <h3 className="text-lg font-bold mb-4 text-green-500">✅ Favoráveis</h3>
-                                        <div className="space-y-2">
-                                            {championData.matchups.favorable.map((matchup, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="bg-background p-3 rounded-lg flex justify-between items-center hover:bg-accent/20 transition"
-                                                >
-                                                    <span className="font-medium">{matchup.champion}</span>
-                                                    <div className="flex gap-3 items-center">
-                                                        <span className="text-green-500 font-bold">
-                                                            {pct(matchup.winrate)}
-                                                        </span>
-                                                        <span className="text-xs text-textSecondary">
-                                                            {matchup.games} jogos
-                                                        </span>
-                                                    </div>
+                            {championData.matchups.favorable.length > 0 && (
+                                <div>
+                                    <h3 className="text-lg font-bold mb-4 text-green-500">✅ Favoráveis</h3>
+                                    <div className="space-y-2">
+                                        {championData.matchups.favorable.map((matchup, index) => (
+                                            <div
+                                                key={index}
+                                                className="bg-background p-3 rounded-lg flex justify-between items-center hover:bg-accent/20 transition"
+                                            >
+                                                <span className="font-medium">{matchup.champion}</span>
+                                                <div className="flex gap-3 items-center">
+                                                    <span className="text-green-500 font-bold">
+                                                        {pct(matchup.winrate)}
+                                                    </span>
+                                                    <span className="text-xs text-textSecondary">
+                                                        {matchup.games} jogos
+                                                    </span>
                                                 </div>
-                                            ))}
-                                        </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
-                            {Array.isArray(championData.matchups.difficult) &&
-                                championData.matchups.difficult.length > 0 && (
-                                    <div>
-                                        <h3 className="text-lg font-bold mb-4 text-red-500">❌ Difíceis</h3>
-                                        <div className="space-y-2">
-                                            {championData.matchups.difficult.map((matchup, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="bg-background p-3 rounded-lg flex justify-between items-center hover:bg-accent/20 transition"
-                                                >
-                                                    <span className="font-medium">{matchup.champion}</span>
-                                                    <div className="flex gap-3 items-center">
-                                                        <span className="text-red-500 font-bold">
-                                                            {pct(matchup.winrate)}
-                                                        </span>
-                                                        <span className="text-xs text-textSecondary">
-                                                            {matchup.games} jogos
-                                                        </span>
-                                                    </div>
+                                </div>
+                            )}
+                            {championData.matchups.difficult.length > 0 && (
+                                <div>
+                                    <h3 className="text-lg font-bold mb-4 text-red-500">❌ Difíceis</h3>
+                                    <div className="space-y-2">
+                                        {championData.matchups.difficult.map((matchup, index) => (
+                                            <div
+                                                key={index}
+                                                className="bg-background p-3 rounded-lg flex justify-between items-center hover:bg-accent/20 transition"
+                                            >
+                                                <span className="font-medium">{matchup.champion}</span>
+                                                <div className="flex gap-3 items-center">
+                                                    <span className="text-red-500 font-bold">
+                                                        {pct(matchup.winrate)}
+                                                    </span>
+                                                    <span className="text-xs text-textSecondary">
+                                                        {matchup.games} jogos
+                                                    </span>
                                                 </div>
-                                            ))}
-                                        </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
+                            )}
                         </div>
                     </section>
                 )}
