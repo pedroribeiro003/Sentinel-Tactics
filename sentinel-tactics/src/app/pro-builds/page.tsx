@@ -79,11 +79,17 @@ export default function ProBuildsPage() {
             const result = await fetchProBuilds(params);
 
             if (isNewSearch) {
-                setBuilds(result.builds);
+                setBuilds(Array.isArray(result.builds) ? result.builds : []);
             } else {
-                setBuilds((prev) => [...prev, ...result.builds]);
+                setBuilds((prev) =>
+                    Array.isArray(prev) && Array.isArray(result.builds)
+                        ? [...prev, ...result.builds]
+                        : Array.isArray(result.builds)
+                        ? result.builds
+                        : prev || []
+                );
             }
-            setTotal(result.total);
+            setTotal(result.total || 0);
         } catch {
             setError("Erro ao carregar pro builds");
         } finally {
@@ -98,7 +104,7 @@ export default function ProBuildsPage() {
         loadBuilds(nextPage, false);
     }
 
-    const hasMore = builds.length < total;
+    const hasMore = Array.isArray(builds) ? builds.length < total : false;
 
     return (
         <main className="flex flex-col gap-6 py-4">
@@ -131,11 +137,12 @@ export default function ProBuildsPage() {
                 <div className="flex flex-wrap items-center gap-3">
                     {/* Lane filter */}
                     <div className="flex items-center gap-1">
-                        {LANES.map((lane) => (
-                            <button
-                                key={lane.value}
-                                onClick={() => setLaneFilter(lane.value)}
-                                className={`
+                        {Array.isArray(LANES) &&
+                            LANES.map((lane) => (
+                                <button
+                                    key={lane.value}
+                                    onClick={() => setLaneFilter(lane.value)}
+                                    className={`
                                     px-3 py-1.5 text-xs font-medium rounded-md transition
                                     ${
                                         laneFilter === lane.value
@@ -143,10 +150,10 @@ export default function ProBuildsPage() {
                                             : "bg-surface text-textSecondary border border-accent/40 hover:border-highlight hover:bg-accent/20"
                                     }
                                 `}
-                            >
-                                {lane.label}
-                            </button>
-                        ))}
+                                >
+                                    {lane.label}
+                                </button>
+                            ))}
                     </div>
 
                     {/* Region filter */}
@@ -159,11 +166,12 @@ export default function ProBuildsPage() {
                             focus:border-highlight transition
                         "
                     >
-                        {REGIONS.map((r) => (
-                            <option key={r.value} value={r.value}>
-                                {r.label}
-                            </option>
-                        ))}
+                        {Array.isArray(REGIONS) &&
+                            REGIONS.map((r) => (
+                                <option key={r.value} value={r.value}>
+                                    {r.label}
+                                </option>
+                            ))}
                     </select>
                 </div>
             </section>
@@ -173,12 +181,14 @@ export default function ProBuildsPage() {
                 {/* Contagem */}
                 {!loading && !error && (
                     <p className="text-xs text-textSecondary mb-1">
-                        {total > 0 ? `Exibindo ${builds.length} de ${total} builds` : "Nenhuma build encontrada"}
+                        {total > 0
+                            ? `Exibindo ${Array.isArray(builds) ? builds.length : 0} de ${total} builds`
+                            : "Nenhuma build encontrada"}
                     </p>
                 )}
 
                 {/* Header da tabela — mesmo grid do card */}
-                {!loading && !error && builds.length > 0 && (
+                {!loading && !error && Array.isArray(builds) && builds.length > 0 && (
                     <div className="grid grid-cols-[200px_100px_90px_220px_1fr_70px_100px] gap-4 px-4 py-2 text-xs text-textSecondary border-b border-accent/30">
                         <span className="pl-2">Champion</span>
                         <span>Lane</span>
@@ -199,9 +209,7 @@ export default function ProBuildsPage() {
                 {/* Cards */}
                 {!loading && !error && (
                     <div className="flex flex-col gap-1">
-                        {builds.map((build) => (
-                            <ProBuildCard key={build.id} build={build} />
-                        ))}
+                        {Array.isArray(builds) && builds.map((build) => <ProBuildCard key={build.id} build={build} />)}
                     </div>
                 )}
 

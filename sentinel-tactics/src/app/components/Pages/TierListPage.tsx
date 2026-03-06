@@ -27,7 +27,6 @@ interface Props {
 export default function TierListPage({ searchParams }: Props) {
     const router = useRouter();
 
-    // ✅ Lê elo e lane da URL, com defaults
     const [elo, setEloState] = useState(
         searchParams.elo ? (Array.isArray(searchParams.elo) ? searchParams.elo[0] : searchParams.elo) : "PLATINUM"
     );
@@ -46,7 +45,6 @@ export default function TierListPage({ searchParams }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
 
-    // ✅ Persiste elo e lane na URL
     function setElo(newElo: string) {
         setEloState(newElo);
         const params = new URLSearchParams();
@@ -85,8 +83,8 @@ export default function TierListPage({ searchParams }: Props) {
         setLimit(PAGE_SIZE);
         fetchTierList(PAGE_SIZE, elo, lane === "ALL" ? undefined : lane)
             .then((rows) => {
-                setData(rows);
-                setHasMore(rows.length === PAGE_SIZE);
+                setData(Array.isArray(rows) ? rows : []);
+                setHasMore(Array.isArray(rows) ? rows.length === PAGE_SIZE : false);
             })
             .catch(() => setError("Erro ao carregar tier list"))
             .finally(() => setLoading(false));
@@ -97,15 +95,20 @@ export default function TierListPage({ searchParams }: Props) {
         setLoadingMore(true);
         fetchTierList(nextLimit, elo, lane === "ALL" ? undefined : lane)
             .then((rows) => {
-                setData(rows);
+                setData((prev) =>
+                    Array.isArray(prev) && Array.isArray(rows)
+                        ? [...prev, ...rows]
+                        : Array.isArray(rows)
+                        ? rows
+                        : prev || []
+                );
                 setLimit(nextLimit);
-                setHasMore(rows.length === nextLimit);
+                setHasMore(Array.isArray(rows) ? rows.length === nextLimit : false);
             })
             .catch(() => setError("Erro ao carregar mais"))
             .finally(() => setLoadingMore(false));
     }
 
-    // ✅ Redireciona para página do champion
     function handleChampionClick(champion: ChampionRow) {
         const name = encodeURIComponent(champion.name.toUpperCase());
         router.push(`/champion/${name}?elo=${elo}${lane !== "ALL" ? `&lane=${lane}` : ""}`);
@@ -138,7 +141,7 @@ export default function TierListPage({ searchParams }: Props) {
 
                 {loading && <p className="text-textSecondary">Carregando...</p>}
                 {error && <p className="text-red-500">{error}</p>}
-                {!loading && !error && (
+                {!loading && !error && Array.isArray(data) && (
                     <>
                         <ChampionTable data={data} onChampionClick={handleChampionClick} />
                         {hasMore && (

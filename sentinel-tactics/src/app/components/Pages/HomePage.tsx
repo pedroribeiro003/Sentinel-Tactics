@@ -49,7 +49,7 @@ export default function HomePage({ searchParams }: Props) {
         setLoading(true);
         setError(null);
         fetchTierList(10, elo)
-            .then(setTierList)
+            .then((data) => setTierList(Array.isArray(data) ? data : []))
             .catch(() => setError("Erro ao carregar tier list"))
             .finally(() => setLoading(false));
     }, [elo]);
@@ -72,7 +72,9 @@ export default function HomePage({ searchParams }: Props) {
 
             <section className="flex flex-col py-4 gap-4">
                 <h1 className="text-4xl">Statistic</h1>
+
                 <EloSelector value={elo} onChange={setElo} />
+
                 {loading && <p className="text-textPrimary">Carregando...</p>}
                 {error && <p className="text-red-500">{error}</p>}
                 {!loading && !error && Array.isArray(tierList) && (

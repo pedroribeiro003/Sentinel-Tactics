@@ -1,6 +1,5 @@
-// src/components/Table.tsx
 import Image from "next/image";
-
+import React from "react";
 // =====================================================
 // TIER SVG
 // =====================================================
@@ -245,37 +244,38 @@ export default function ChampionTable({ data, onChampionClick }: ChampionTablePr
             </div>
 
             <div className="divide-y divide-accent/40">
-                {data.map((champion, index) => (
-                    <div
-                        key={`${champion.id}-${index}`}
-                        onClick={() => onChampionClick?.(champion)}
-                        className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-4 px-4 py-4 hover:bg-surface/60 transition ${
-                            onChampionClick ? "cursor-pointer" : ""
-                        }`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <Image
-                                src={champion.image}
-                                alt={champion.name}
-                                width={40}
-                                height={40}
-                                className="rounded"
-                            />
-                            <span className="font-medium">{champion.name}</span>
+                {Array.isArray(data) &&
+                    data.map((champion, index) => (
+                        <div
+                            key={`${champion.id}-${index}`}
+                            onClick={() => onChampionClick?.(champion)}
+                            className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] items-center gap-4 px-4 py-4 hover:bg-surface/60 transition ${
+                                onChampionClick ? "cursor-pointer" : ""
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Image
+                                    src={champion.image}
+                                    alt={champion.name}
+                                    width={40}
+                                    height={40}
+                                    className="rounded"
+                                />
+                                <span className="font-medium">{champion.name}</span>
+                            </div>
+
+                            <span className="text-sm text-textSecondary capitalize">{champion.lane}</span>
+
+                            <div className="flex items-center">
+                                <TierSVG tier={champion.tier ?? champion.tierImage ?? ""} size={36} />
+                            </div>
+
+                            <span>{(champion.winRate * 100).toFixed(2)}%</span>
+                            <span>{(champion.pickRate * 100).toFixed(2)}%</span>
+                            <span>{(champion.banRate * 100).toFixed(2)}%</span>
+                            <span>{champion.games.toLocaleString()}</span>
                         </div>
-
-                        <span className="text-sm text-textSecondary capitalize">{champion.lane}</span>
-
-                        <div className="flex items-center">
-                            <TierSVG tier={champion.tier ?? champion.tierImage ?? ""} size={36} />
-                        </div>
-
-                        <span>{(champion.winRate * 100).toFixed(2)}%</span>
-                        <span>{(champion.pickRate * 100).toFixed(2)}%</span>
-                        <span>{(champion.banRate * 100).toFixed(2)}%</span>
-                        <span>{champion.games.toLocaleString()}</span>
-                    </div>
-                ))}
+                    ))}
             </div>
         </div>
     );

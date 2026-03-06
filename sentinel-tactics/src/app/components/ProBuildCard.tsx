@@ -144,35 +144,38 @@ export default function ProBuildCard({ build }: ProBuildCardProps) {
 
                 {/* Items */}
                 <div className="flex items-center gap-1">
-                    {build.items.map((item, idx) => (
-                        <div
-                            key={`${item.id}-${idx}`}
-                            className="h-7 w-7 rounded bg-accent/40 overflow-hidden flex-shrink-0"
-                        >
-                            {item.iconUrl ? (
-                                <img
-                                    src={item.iconUrl}
-                                    alt={`Item ${item.id}`}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : item.id > 0 ? (
-                                <img
-                                    src={`${DDRAGON}/item/${item.id}.png`}
-                                    alt={`Item ${item.id}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = "none";
-                                    }}
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-accent/20" />
-                            )}
-                        </div>
-                    ))}
+                    {Array.isArray(build.items) &&
+                        build.items.map((item, idx) => (
+                            <div
+                                key={`${item.id}-${idx}`}
+                                className="h-7 w-7 rounded bg-accent/40 overflow-hidden flex-shrink-0"
+                            >
+                                {item.iconUrl ? (
+                                    <img
+                                        src={item.iconUrl}
+                                        alt={`Item ${item.id}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : item.id > 0 ? (
+                                    <img
+                                        src={`${DDRAGON}/item/${item.id}.png`}
+                                        alt={`Item ${item.id}`}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = "none";
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-accent/20" />
+                                )}
+                            </div>
+                        ))}
                     {/* Slots vazios para manter alinhamento */}
-                    {Array.from({ length: Math.max(0, 7 - build.items.length) }).map((_, idx) => (
-                        <div key={`empty-${idx}`} className="h-7 w-7 rounded bg-accent/20 flex-shrink-0" />
-                    ))}
+                    {Array.from({ length: Math.max(0, 7 - (Array.isArray(build.items) ? build.items.length : 0)) }).map(
+                        (_, idx) => (
+                            <div key={`empty-${idx}`} className="h-7 w-7 rounded bg-accent/20 flex-shrink-0" />
+                        )
+                    )}
                 </div>
 
                 {/* Spacer — empurra CS e Info pro final */}
@@ -211,7 +214,7 @@ export default function ProBuildCard({ build }: ProBuildCardProps) {
                             </div>
 
                             {/* Primary perks */}
-                            {build.runes.primaryPerks && build.runes.primaryPerks.length > 0 && (
+                            {Array.isArray(build.runes.primaryPerks) && build.runes.primaryPerks.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] text-textSecondary/60 w-14">Primary</span>
                                     <div className="flex items-center gap-1">
@@ -223,7 +226,7 @@ export default function ProBuildCard({ build }: ProBuildCardProps) {
                             )}
 
                             {/* Secondary perks */}
-                            {build.runes.secondaryPerks && build.runes.secondaryPerks.length > 0 && (
+                            {Array.isArray(build.runes.secondaryPerks) && build.runes.secondaryPerks.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] text-textSecondary/60 w-14">Secondary</span>
                                     <div className="flex items-center gap-1">
@@ -235,7 +238,7 @@ export default function ProBuildCard({ build }: ProBuildCardProps) {
                             )}
 
                             {/* Stat shards */}
-                            {build.runes.statShards && build.runes.statShards.length > 0 && (
+                            {Array.isArray(build.runes.statShards) && build.runes.statShards.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] text-textSecondary/60 w-14">Shards</span>
                                     <div className="flex items-center gap-1">
@@ -249,7 +252,7 @@ export default function ProBuildCard({ build }: ProBuildCardProps) {
                     )}
 
                     {/* Summoner Spells */}
-                    {build.summonerSpells && build.summonerSpells.length > 0 && (
+                    {Array.isArray(build.summonerSpells) && build.summonerSpells.length > 0 && (
                         <div className="flex flex-col gap-2">
                             <span className="text-xs text-textSecondary font-medium uppercase tracking-wider">
                                 Summoner Spells
@@ -301,31 +304,32 @@ export default function ProBuildCard({ build }: ProBuildCardProps) {
                     <div className="flex flex-col gap-2">
                         <span className="text-xs text-textSecondary font-medium uppercase tracking-wider">Items</span>
                         <div className="flex items-center gap-1.5">
-                            {build.items.map((item, idx) => (
-                                <div
-                                    key={`exp-${item.id}-${idx}`}
-                                    className="h-10 w-10 rounded bg-accent/40 overflow-hidden"
-                                >
-                                    {item.iconUrl ? (
-                                        <img
-                                            src={item.iconUrl}
-                                            alt={`Item ${item.id}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : item.id > 0 ? (
-                                        <img
-                                            src={`${DDRAGON}/item/${item.id}.png`}
-                                            alt={`Item ${item.id}`}
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).style.display = "none";
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-accent/20" />
-                                    )}
-                                </div>
-                            ))}
+                            {Array.isArray(build.items) &&
+                                build.items.map((item, idx) => (
+                                    <div
+                                        key={`exp-${item.id}-${idx}`}
+                                        className="h-10 w-10 rounded bg-accent/40 overflow-hidden"
+                                    >
+                                        {item.iconUrl ? (
+                                            <img
+                                                src={item.iconUrl}
+                                                alt={`Item ${item.id}`}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : item.id > 0 ? (
+                                            <img
+                                                src={`${DDRAGON}/item/${item.id}.png`}
+                                                alt={`Item ${item.id}`}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).style.display = "none";
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-accent/20" />
+                                        )}
+                                    </div>
+                                ))}
                         </div>
                     </div>
                 </div>
