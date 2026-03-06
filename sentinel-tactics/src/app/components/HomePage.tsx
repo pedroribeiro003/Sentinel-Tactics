@@ -72,12 +72,12 @@ export default function HomePage({ searchParams }: Props) {
 
             <section className="flex flex-col py-4 gap-4">
                 <h1 className="text-4xl">Statistic</h1>
-
                 <EloSelector value={elo} onChange={setElo} />
-
                 {loading && <p className="text-textPrimary">Carregando...</p>}
                 {error && <p className="text-red-500">{error}</p>}
-                {!loading && !error && <ChampionTable data={tierList} onChampionClick={handleChampionClick} />}
+                {!loading && !error && Array.isArray(tierList) && (
+                    <ChampionTable data={tierList} onChampionClick={handleChampionClick} />
+                )}
             </section>
         </main>
     );

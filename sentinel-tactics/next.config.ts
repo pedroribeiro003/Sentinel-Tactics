@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     experimental: {
-        turbo: false, // Desativa Turbopack
+        turbo: false,
     },
+    transpilePackages: ["axios", "lucide-react"],
     images: {
-        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // Garanta arrays
+        deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [32, 48, 64, 96, 128, 256, 384],
         qualities: [75],
     },
