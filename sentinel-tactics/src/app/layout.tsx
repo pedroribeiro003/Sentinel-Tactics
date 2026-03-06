@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Exo_2 } from "next/font/google";
 import Header from "./components/Header";
+import CookieBanner from "./components/CookieBanner";
+import Link from "next/link";
 import "./globals.css";
 
 const exo = Exo_2({
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en" className="overflow-x-hidden">
+        <html lang="pt-BR" className="overflow-x-hidden">
             <body className={`${exo.className} bg-background overflow-x-hidden`}>
                 <Header />
 
@@ -36,9 +38,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </aside>
                 </div>
 
-                <footer className="mt-12 sm:mt-24 border-t border-accent py-6 sm:py-8 text-center text-xs sm:text-sm text-textSecondary">
-                    © {new Date().getFullYear()} Sentinel Tactics
+                <footer className="mt-12 sm:mt-24 border-t border-accent py-6 sm:py-8 text-textSecondary">
+                    <div className="max-w-[1100px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <p className="text-xs sm:text-sm">
+                            © {new Date().getFullYear()} Sentinel Tactics. Não afiliado à Riot Games.
+                        </p>
+                        <div className="flex gap-4 text-xs sm:text-sm">
+                            <Link href="/terms" className="hover:text-highlight transition">
+                                Termos de Uso
+                            </Link>
+                            <Link href="/terms#privacidade" className="hover:text-highlight transition">
+                                Privacidade
+                            </Link>
+                            <Link href="/terms#cookies" className="hover:text-highlight transition">
+                                Cookies
+                            </Link>
+                        </div>
+                    </div>
                 </footer>
+
+                <CookieBanner />
             </body>
         </html>
     );

@@ -371,7 +371,9 @@ function SpellIcon({ spellId }: { spellId: number }) {
 // MAIN PAGE
 // =====================================================
 export default function ChampionPage() {
+    console.log("🏆 ChampionPage montou");
     const params = useParams();
+    console.log("params:", params);
     const searchParams = useSearchParams();
     const router = useRouter();
 
