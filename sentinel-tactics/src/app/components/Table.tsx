@@ -1,5 +1,5 @@
-import Image from "next/image";
 import React from "react";
+import Image from "next/image";
 // =====================================================
 // TIER SVG
 // =====================================================
@@ -254,12 +254,14 @@ export default function ChampionTable({ data, onChampionClick }: ChampionTablePr
                             }`}
                         >
                             <div className="flex items-center gap-3">
-                                <Image
+                                {/* Trocar Image por img para compatibilidade com imagens externas */}
+                                <img
                                     src={champion.image}
                                     alt={champion.name}
-                                    width={40}
-                                    height={40}
-                                    className="rounded"
+                                    className="w-10 h-10 rounded object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = "/placeholder-champion.png";
+                                    }}
                                 />
                                 <span className="font-medium">{champion.name}</span>
                             </div>
