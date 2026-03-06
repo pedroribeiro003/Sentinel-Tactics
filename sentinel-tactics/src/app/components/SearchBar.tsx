@@ -67,6 +67,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     }, []);
 
     const navigateToChampion = (championName: string) => {
+        console.log("🔍 Navegando para campeão:", championName);
         router.push(`/champion/${encodeURIComponent(championName)}`);
         setShowSuggestions(false);
         setSearchQuery("");
@@ -89,6 +90,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 return;
             }
             onSearch?.(`${playerName}#${playerTag}`, region);
+            console.log("🔍 Navegando para jogador:", playerName, playerTag, "na região", region);
             router.push(`/player/${encodeURIComponent(playerName)}/${encodeURIComponent(playerTag)}?region=${region}`);
             setShowSuggestions(false);
         } else {

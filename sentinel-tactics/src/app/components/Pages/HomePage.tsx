@@ -10,8 +10,6 @@ interface Props {
 }
 
 export default function HomePage({ searchParams }: Props) {
-    console.log("HomePage rendered with searchParams:", searchParams);
-
     const router = useRouter();
 
     const [elo, setEloState] = useState("PLATINUM");
@@ -25,12 +23,11 @@ export default function HomePage({ searchParams }: Props) {
                 ? searchParams.elo[0]
                 : searchParams.elo
             : undefined;
-        console.log("Elo param from URL:", eloParam);
+
         if (eloParam) setEloState(eloParam);
     }, [searchParams]);
 
     function setElo(newElo: string) {
-        console.log("Setting elo to:", newElo);
         setEloState(newElo);
         const params = new URLSearchParams();
         Object.entries(searchParams).forEach(([key, value]) => {
@@ -45,32 +42,24 @@ export default function HomePage({ searchParams }: Props) {
     }
 
     function handleChampionClick(champion: ChampionRow) {
-        console.log("Champion clicked:", champion);
         const name = encodeURIComponent(champion.name.toUpperCase());
         router.push(`/champion/${name}?elo=${elo}`);
     }
 
     useEffect(() => {
-        console.log("Fetching tier list for elo:", elo);
         setLoading(true);
         setError(null);
         fetchTierList(10, elo)
             .then((data) => {
-                console.log("Tier list data received:", data);
-                console.log("Is array?", Array.isArray(data));
                 setTierList(Array.isArray(data) ? data : []);
             })
             .catch((err) => {
-                console.log("Error fetching tier list:", err);
                 setError("Erro ao carregar tier list");
             })
             .finally(() => {
-                console.log("Fetch finished, setting loading to false");
                 setLoading(false);
             });
     }, [elo]);
-
-    console.log("Current state: elo=", elo, "tierList length=", tierList.length, "loading=", loading, "error=", error);
 
     return (
         <main className="flex flex-col gap-4">
