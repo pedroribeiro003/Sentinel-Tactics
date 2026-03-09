@@ -489,6 +489,9 @@ export default function ChampionPage() {
                             <option value="GOLD">Gold</option>
                             <option value="PLATINUM">Platinum</option>
                             <option value="DIAMOND">Diamond</option>
+                            <option value="MASTER">Master</option>
+                            <option value="GRANDMASTER">Grandmaster</option>
+                            <option value="CHALLENGER">Challenger</option>
                         </select>
                         <Button variant="secondary" onClick={() => router.push("/")}>
                             ← Voltar
