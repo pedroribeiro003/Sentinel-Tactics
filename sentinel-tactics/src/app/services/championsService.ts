@@ -12,7 +12,7 @@ export async function fetchChampionDetails({
     name,
     elo = "PLATINUM",
     lane,
-    patch = "16.5",
+    patch = "16.05",
 }: GetChampionDetailsParams): Promise<ChampionDetails> {
     const safeName = encodeURIComponent(decodeURIComponent(name));
     const { data } = await api.get<ChampionDetails>(`/champions/${safeName}`, {
@@ -25,7 +25,7 @@ export async function fetchChampionPerformance(
     name: string,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.5"
+    patch = "16.05"
 ): Promise<{ champion: Champion; performance: Performance }> {
     const details = await fetchChampionDetails({ name, elo, lane, patch });
     return {
