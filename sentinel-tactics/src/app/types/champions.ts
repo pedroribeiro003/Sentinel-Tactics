@@ -16,7 +16,6 @@ export interface Performance {
     lane: string;
 }
 
-// ✅ Item dentro de um build agora tem icon_url
 export interface BuildItem {
     itemId: number;
     icon_url: string | null;
@@ -24,6 +23,7 @@ export interface BuildItem {
 
 export interface Build {
     items: BuildItem[];
+    trinket: { itemId: number; icon_url: string | null } | null;
     winrate: number;
     games: number;
     pickrate: number;
@@ -56,7 +56,6 @@ export interface Matchups {
     difficult: Matchup[];
 }
 
-// ✅ Item individual agora tem icon_url
 export interface Item {
     itemId: number;
     itemName: string | null;
@@ -75,6 +74,20 @@ export interface SummonerSpell {
     pickrate: number;
 }
 
+export interface SkillOrder {
+    skillOrder: string; // ex: "QQWEQRQEQERWEERWR"
+    maxOrder: string; // ex: "Q > E > W"
+    winrate: number;
+    games: number;
+    pickrate: number;
+}
+
+export interface JunglePath {
+    path: string[]; // ex: ["blue_top", "gromp_top", ...]
+    winrate: number;
+    games: number;
+}
+
 export interface ChampionDetails {
     champion: Champion;
     performance: Performance;
@@ -83,9 +96,12 @@ export interface ChampionDetails {
     matchups: Matchups;
     items: Item[];
     summonerSpells: SummonerSpell[];
+    skillOrder: SkillOrder | null;
+    junglePath: JunglePath | null;
     metadata: {
         elo: string;
         lane: string;
+        patch: string;
         lastUpdate: string;
     };
 }

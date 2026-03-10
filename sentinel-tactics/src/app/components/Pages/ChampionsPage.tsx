@@ -7,7 +7,7 @@ import { ChampionDetails } from "../../types/champions";
 import { getSummonerSpellIcon, getRuneIcon } from "../../utils/ddragon";
 
 // =====================================================
-// TIER SVG (igual à TierList)
+// TIER SVG
 // =====================================================
 const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
     const s = size;
@@ -368,12 +368,135 @@ function SpellIcon({ spellId }: { spellId: number }) {
 }
 
 // =====================================================
+// SKILL ORDER
+// =====================================================
+function SkillOrderSection({ skillOrder }: { skillOrder: NonNullable<ChampionDetails["skillOrder"]> }) {
+    const skills = skillOrder.skillOrder.split("");
+    const skillColors: Record<string, string> = {
+        Q: "bg-blue-500",
+        W: "bg-green-500",
+        E: "bg-yellow-500",
+        R: "bg-red-500",
+    };
+
+    return (
+        <section className="bg-surface p-3 sm:p-6 rounded">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-4">
+                <h2 className="text-lg sm:text-xl font-bold">🎯 Ordem de Habilidades</h2>
+                <div className="text-xs sm:text-sm text-textSecondary">
+                    WR: <span className="text-highlight font-medium">{skillOrder.winrate.toFixed(1)}%</span> •{" "}
+                    {skillOrder.games.toLocaleString()} jogos
+                </div>
+            </div>
+
+            <div className="mb-4">
+                <p className="text-xs text-textSecondary mb-2">Sequência de evolução (níveis 1-18)</p>
+                <div className="flex flex-wrap gap-1">
+                    {skills.map((skill, index) => (
+                        <div key={index} className="flex flex-col items-center gap-0.5">
+                            <span className="text-xs text-textSecondary">{index + 1}</span>
+                            <div
+                                className={`w-7 h-7 rounded flex items-center justify-center font-bold text-sm text-white ${
+                                    skillColors[skill] ?? "bg-accent"
+                                } ${skill === "R" ? "ring-2 ring-red-300" : ""}`}
+                            >
+                                {skill}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="bg-background p-3 rounded flex items-center gap-3">
+                <span className="text-xs text-textSecondary">Maxar:</span>
+                <div className="flex items-center gap-2">
+                    {skillOrder.maxOrder.split(" > ").map((skill, index, arr) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <div
+                                className={`w-8 h-8 rounded flex items-center justify-center font-bold text-white ${
+                                    skillColors[skill] ?? "bg-accent"
+                                }`}
+                            >
+                                {skill}
+                            </div>
+                            {index < arr.length - 1 && <span className="text-textSecondary">›</span>}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+// =====================================================
+// JUNGLE PATH
+// =====================================================
+const CAMP_LABELS: Record<string, { label: string; side: "blue" | "red" | "neutral" }> = {
+    blue_top: { label: "Blue (Top)", side: "blue" },
+    blue_bot: { label: "Blue (Bot)", side: "blue" },
+    red_top: { label: "Red (Top)", side: "red" },
+    red_bot: { label: "Red (Bot)", side: "red" },
+    gromp_top: { label: "Gromp (Top)", side: "blue" },
+    gromp_bot: { label: "Gromp (Bot)", side: "blue" },
+    wolves_top: { label: "Wolves (Top)", side: "blue" },
+    wolves_bot: { label: "Wolves (Bot)", side: "blue" },
+    raptors_top: { label: "Raptors (Top)", side: "red" },
+    raptors_bot: { label: "Raptors (Bot)", side: "red" },
+    krugs_top: { label: "Krugs (Top)", side: "red" },
+    krugs_bot: { label: "Krugs (Bot)", side: "red" },
+    scuttler_top: { label: "Scuttler (Top)", side: "neutral" },
+    scuttler_bot: { label: "Scuttler (Bot)", side: "neutral" },
+    herald: { label: "Herald", side: "neutral" },
+    baron: { label: "Baron", side: "neutral" },
+    dragon: { label: "Dragon", side: "neutral" },
+    unknown: { label: "?", side: "neutral" },
+};
+
+const CAMP_COLORS = {
+    blue: "bg-blue-700 border-blue-400",
+    red: "bg-red-700 border-red-400",
+    neutral: "bg-yellow-700 border-yellow-400",
+};
+
+function JunglePathSection({ junglePath }: { junglePath: NonNullable<ChampionDetails["junglePath"]> }) {
+    return (
+        <section className="bg-surface p-3 sm:p-6 rounded">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-4">
+                <h2 className="text-lg sm:text-xl font-bold">🌲 Rota de Jungle</h2>
+                <div className="text-xs sm:text-sm text-textSecondary">
+                    WR: <span className="text-highlight font-medium">{junglePath.winrate.toFixed(1)}%</span> •{" "}
+                    {junglePath.games.toLocaleString()} jogos
+                </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+                {junglePath.path.map((camp, index) => {
+                    const info = CAMP_LABELS[camp] ?? { label: camp, side: "neutral" as const };
+                    const colors = CAMP_COLORS[info.side];
+                    return (
+                        <div key={index} className="flex items-center gap-2">
+                            <div
+                                className={`px-3 py-2 rounded border-2 ${colors} flex flex-col items-center min-w-[64px]`}
+                            >
+                                <span className="text-xs font-bold text-white">{index + 1}º</span>
+                                <span className="text-xs text-white text-center leading-tight">{info.label}</span>
+                            </div>
+                            {index < junglePath.path.length - 1 && (
+                                <span className="text-textSecondary text-lg">→</span>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+        </section>
+    );
+}
+
+// =====================================================
 // MAIN PAGE
 // =====================================================
 export default function ChampionPage() {
-    console.log("🏆 ChampionPage montou");
     const params = useParams();
-    console.log("params:", params);
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -446,7 +569,6 @@ export default function ChampionPage() {
         <main className="p-2 sm:p-4 flex flex-col gap-4 sm:gap-8">
             {/* HEADER */}
             <section className="bg-surface p-3 sm:p-4 rounded flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
-                {/* Avatar + Tier lado a lado no mobile */}
                 <div className="flex items-center gap-3">
                     <div className="w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0">
                         <img
@@ -455,7 +577,6 @@ export default function ChampionPage() {
                             className="rounded-full w-full h-full object-cover border-4 border-accent"
                         />
                     </div>
-                    {/* Tier — visível só no mobile aqui */}
                     {championData.performance.tier && (
                         <div className="flex flex-col items-center sm:hidden">
                             <TierSVG tier={championData.performance.tier} size={64} />
@@ -466,7 +587,6 @@ export default function ChampionPage() {
                     )}
                 </div>
 
-                {/* Info */}
                 <div className="flex flex-col flex-1 gap-2">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold">{championData.champion.name}</h1>
@@ -475,8 +595,6 @@ export default function ChampionPage() {
                             {elo} • {currentLane?.label}
                         </span>
                     </div>
-
-                    {/* Elo selector + back */}
                     <div className="flex gap-2 flex-wrap">
                         <select
                             value={elo}
@@ -488,7 +606,12 @@ export default function ChampionPage() {
                             <option value="SILVER">Silver</option>
                             <option value="GOLD">Gold</option>
                             <option value="PLATINUM">Platinum</option>
+                            <option value="EMERALD">Emerald</option>
                             <option value="DIAMOND">Diamond</option>
+                            <option value="MASTER">Master</option>
+                            <option value="GRANDMASTER">Grandmaster</option>
+                            <option value="CHALLENGER">Challenger</option>
+                            <option value="PLATINUM+">Platinum+</option>
                             <option value="MASTER">Master</option>
                             <option value="GRANDMASTER">Grandmaster</option>
                             <option value="CHALLENGER">Challenger</option>
@@ -497,8 +620,6 @@ export default function ChampionPage() {
                             ← Voltar
                         </Button>
                     </div>
-
-                    {/* Lane selector */}
                     <div className="flex items-center gap-1 flex-wrap">
                         <span className="text-xs text-textSecondary mr-1">Lane:</span>
                         {LANES.map((l) => {
@@ -519,7 +640,6 @@ export default function ChampionPage() {
                     </div>
                 </div>
 
-                {/* Tier — só desktop */}
                 {championData.performance.tier && (
                     <div className="hidden sm:flex flex-col items-center bg-background p-4 rounded">
                         <TierSVG tier={championData.performance.tier} size={80} />
@@ -553,9 +673,7 @@ export default function ChampionPage() {
                             {championData.runes[0].games.toLocaleString()} jogos
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* PRIMARY */}
                         <div className="bg-background p-3 sm:p-4 rounded border-2 border-accent">
                             <div className="flex items-center gap-3 mb-3">
                                 <RuneIcon id={championData.runes[0].primary.style} size={8} ring={false} />
@@ -586,8 +704,6 @@ export default function ChampionPage() {
                                 ))}
                             </div>
                         </div>
-
-                        {/* SECONDARY */}
                         <div className="bg-background p-3 sm:p-4 rounded border-2 border-accent/50">
                             <div className="flex items-center gap-3 mb-3">
                                 <RuneIcon id={championData.runes[0].secondary.style} size={8} ring={false} />
@@ -603,8 +719,6 @@ export default function ChampionPage() {
                             </div>
                         </div>
                     </div>
-
-                    {/* STAT SHARDS */}
                     <div className="mt-4 bg-background p-3 sm:p-4 rounded">
                         <h4 className="font-bold mb-3 text-center text-sm">Fragmentos de Estatística</h4>
                         <div className="flex justify-center gap-6 sm:gap-8">
@@ -679,10 +793,21 @@ export default function ChampionPage() {
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex gap-1 flex-wrap">
+                                <div className="flex gap-1 flex-wrap items-center">
                                     {build.items.map((item, itemIndex) => (
                                         <ItemIcon key={itemIndex} itemId={item.itemId} icon_url={item.icon_url} />
                                     ))}
+                                    {build.trinket && (
+                                        <>
+                                            <span className="text-textSecondary mx-1 text-xs">+</span>
+                                            <div className="opacity-70" title="Trinket">
+                                                <ItemIcon
+                                                    itemId={build.trinket.itemId}
+                                                    icon_url={build.trinket.icon_url}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -780,6 +905,12 @@ export default function ChampionPage() {
                         </div>
                     </section>
                 )}
+
+            {/* SKILL ORDER */}
+            {championData.skillOrder && <SkillOrderSection skillOrder={championData.skillOrder} />}
+
+            {/* JUNGLE PATH */}
+            {championData.junglePath && <JunglePathSection junglePath={championData.junglePath} />}
         </main>
     );
 }

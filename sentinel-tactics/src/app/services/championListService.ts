@@ -1,33 +1,32 @@
-// sentinel-tactics/src/app/services/championService.ts
+// src/services/championsService.ts
 import { api } from "./api";
-import { ChampionDetails, Champion, Performance, Build, Runes, Matchups } from "../types/champions";
+import {
+    ChampionDetails,
+    Champion,
+    Performance,
+    Build,
+    Runes,
+    Matchups,
+    SkillOrder,
+    JunglePath,
+} from "../types/champions";
 
 interface GetChampionDetailsParams {
     name: string;
     elo?: string;
     lane?: string;
+    patch?: string;
 }
 
-export interface ChampionListItem {
-    id: string;
-    name: string;
-    image: string | null;
-}
-
-// ✅ NOVA FUNÇÃO: Buscar lista completa de champions
-export async function fetchChampionList(): Promise<ChampionListItem[]> {
-    const { data } = await api.get<ChampionListItem[]>("/champions");
-    return data;
-}
-
-// Funções existentes
 export async function fetchChampionDetails({
     name,
     elo = "PLATINUM",
     lane,
+    patch = "16.05",
 }: GetChampionDetailsParams): Promise<ChampionDetails> {
-    const { data } = await api.get<ChampionDetails>(`/champions/${encodeURIComponent(name)}`, {
-        params: { elo, ...(lane ? { lane } : {}) },
+    const safeName = encodeURIComponent(decodeURIComponent(name));
+    const { data } = await api.get<ChampionDetails>(`/champions/${safeName}`, {
+        params: { elo, patch, ...(lane ? { lane } : {}) },
     });
     return data;
 }
@@ -35,26 +34,58 @@ export async function fetchChampionDetails({
 export async function fetchChampionPerformance(
     name: string,
     elo = "PLATINUM",
-    lane?: string
+    lane?: string,
+    patch = "16.05"
 ): Promise<{ champion: Champion; performance: Performance }> {
-    const details = await fetchChampionDetails({ name, elo, lane });
-    return {
-        champion: details.champion,
-        performance: details.performance,
-    };
+    const details = await fetchChampionDetails({ name, elo, lane, patch });
+    return { champion: details.champion, performance: details.performance };
 }
 
-export async function fetchChampionBuilds(name: string, elo = "PLATINUM", lane?: string): Promise<Build[]> {
-    const details = await fetchChampionDetails({ name, elo, lane });
+export async function fetchChampionBuilds(
+    name: string,
+    elo = "PLATINUM",
+    lane?: string,
+    patch = "16.05"
+): Promise<Build[]> {
+    const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.builds;
 }
 
-export async function fetchChampionRunes(name: string, elo = "PLATINUM", lane?: string): Promise<Runes[]> {
-    const details = await fetchChampionDetails({ name, elo, lane });
+export async function fetchChampionRunes(
+    name: string,
+    elo = "PLATINUM",
+    lane?: string,
+    patch = "16.05"
+): Promise<Runes[]> {
+    const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.runes;
 }
 
-export async function fetchChampionMatchups(name: string, elo = "PLATINUM", lane?: string): Promise<Matchups> {
-    const details = await fetchChampionDetails({ name, elo, lane });
+export async function fetchChampionMatchups(
+    name: string,
+    elo = "PLATINUM",
+    lane?: string,
+    patch = "16.05"
+): Promise<Matchups> {
+    const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.matchups;
+}
+
+export async function fetchChampionSkillOrder(
+    name: string,
+    elo = "PLATINUM",
+    lane?: string,
+    patch = "16.05"
+): Promise<SkillOrder | null> {
+    const details = await fetchChampionDetails({ name, elo, lane, patch });
+    return details.skillOrder;
+}
+
+export async function fetchChampionJunglePath(
+    name: string,
+    elo = "PLATINUM",
+    patch = "16.05"
+): Promise<JunglePath | null> {
+    const details = await fetchChampionDetails({ name, elo, patch });
+    return details.junglePath;
 }
