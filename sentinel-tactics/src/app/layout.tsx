@@ -14,6 +14,9 @@ const exo = Exo_2({
 export const metadata: Metadata = {
     title: "Sentinel Tactics",
     description: "Competitive rankings & analytics",
+    other: {
+        "google-adsense-account": "ca-pub-3947974919054435",
+    },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
