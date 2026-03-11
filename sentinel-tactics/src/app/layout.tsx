@@ -25,18 +25,46 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className={`${exo.className} bg-background overflow-x-hidden`}>
                 <Header />
 
+                {/* Banner mobile — abaixo do header, só no mobile/tablet */}
+                <div className="xl:hidden w-full flex justify-center py-2 bg-background border-b border-accent">
+                    <div className="w-full max-w-[728px] h-[90px] bg-surface flex items-center justify-center text-xs text-textSecondary rounded">
+                        AD
+                    </div>
+                </div>
+
                 <div className="flex justify-center px-2 sm:px-4">
-                    <aside className="hidden xl:block w-[160px] mr-6">
-                        <div className="sticky top-28 h-[600px] bg-surface flex items-center justify-center text-xs text-textSecondary">
-                            AD
+                    {/* Aside esquerdo */}
+                    <aside className="hidden xl:flex flex-col w-[300px] mr-6 flex-shrink-0">
+                        <div className="sticky top-28 flex flex-col gap-4">
+                            <div className="w-[300px] h-[250px] bg-surface flex items-center justify-center text-xs text-textSecondary rounded">
+                                AD
+                            </div>
+                            <div className="w-[300px] h-[600px] bg-surface flex items-center justify-center text-xs text-textSecondary rounded">
+                                AD
+                            </div>
                         </div>
                     </aside>
 
-                    <main className="w-full max-w-[1100px] min-w-0 overflow-x-hidden">{children}</main>
+                    <main className="w-full max-w-[1100px] min-w-0 overflow-x-hidden">
+                        {children}
 
-                    <aside className="hidden xl:block w-[160px] ml-6">
-                        <div className="sticky top-28 h-[600px] bg-surface flex items-center justify-center text-xs text-textSecondary">
-                            AD
+                        {/* Leaderboard dentro do conteúdo — todos os tamanhos */}
+                        <div className="w-full flex justify-center my-6">
+                            <div className="w-full max-w-[728px] h-[90px] bg-surface flex items-center justify-center text-xs text-textSecondary rounded">
+                                AD
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Aside direito */}
+                    <aside className="hidden xl:flex flex-col w-[300px] ml-6 flex-shrink-0">
+                        <div className="sticky top-28 flex flex-col gap-4">
+                            <div className="w-[300px] h-[250px] bg-surface flex items-center justify-center text-xs text-textSecondary rounded">
+                                AD
+                            </div>
+                            <div className="w-[300px] h-[600px] bg-surface flex items-center justify-center text-xs text-textSecondary rounded">
+                                AD
+                            </div>
                         </div>
                     </aside>
                 </div>
