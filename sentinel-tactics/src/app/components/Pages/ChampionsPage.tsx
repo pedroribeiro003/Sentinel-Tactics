@@ -111,6 +111,7 @@ const TierSVG = ({ tier, size = 40 }: { tier: string; size?: number }) => {
             );
         return <circle cx={cx} cy={cy} r={r} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />;
     };
+
     const ShineShape = ({ fill }: { fill: string }) => {
         if (tier === "S") return <polygon points={hexPoints(r)} fill={fill} stroke="none" />;
         if (tier === "A")
@@ -388,7 +389,6 @@ function SkillOrderSection({ skillOrder }: { skillOrder: NonNullable<ChampionDet
                     {skillOrder.games.toLocaleString()} jogos
                 </div>
             </div>
-
             <div className="mb-4">
                 <p className="text-xs text-textSecondary mb-2">Sequência de evolução (níveis 1-18)</p>
                 <div className="flex flex-wrap gap-1">
@@ -406,7 +406,6 @@ function SkillOrderSection({ skillOrder }: { skillOrder: NonNullable<ChampionDet
                     ))}
                 </div>
             </div>
-
             <div className="bg-background p-3 rounded flex items-center gap-3">
                 <span className="text-xs text-textSecondary">Maxar:</span>
                 <div className="flex items-center gap-2">
@@ -468,7 +467,6 @@ function JunglePathSection({ junglePath }: { junglePath: NonNullable<ChampionDet
                     {junglePath.games.toLocaleString()} jogos
                 </div>
             </div>
-
             <div className="flex flex-wrap items-center gap-2">
                 {junglePath.path.map((camp, index) => {
                     const info = CAMP_LABELS[camp] ?? { label: camp, side: "neutral" as const };
@@ -501,7 +499,7 @@ export default function ChampionPage() {
     const router = useRouter();
 
     const championName = decodeURIComponent(params?.name as string);
-    const elo = searchParams?.get("elo") || "PLATINUM";
+    const elo = searchParams?.get("elo") || "PLATINUM+";
     const lane = searchParams?.get("lane") || "ALL";
 
     const [championData, setChampionData] = useState<ChampionDetails | null>(null);
@@ -534,8 +532,22 @@ export default function ChampionPage() {
         loadChampionDetails();
     }, [championName, elo, lane]);
 
-    const handleLaneChange = (newLane: string) => router.push(`/champion/${championName}?elo=${elo}&lane=${newLane}`);
-    const handleEloChange = (newElo: string) => router.push(`/champion/${championName}?elo=${newElo}&lane=${lane}`);
+    const handleEloChange = (newElo: string) => {
+        router.push(
+            `/champion/${encodeURIComponent(championName)}?elo=${encodeURIComponent(newElo)}&lane=${encodeURIComponent(
+                lane
+            )}`
+        );
+    };
+
+    const handleLaneChange = (newLane: string) => {
+        router.push(
+            `/champion/${encodeURIComponent(championName)}?elo=${encodeURIComponent(elo)}&lane=${encodeURIComponent(
+                newLane
+            )}`
+        );
+    };
+
     const pct = (value: number | null | undefined) => (value != null ? `${value.toFixed(1)}%` : "N/A");
 
     if (loading)
@@ -595,7 +607,7 @@ export default function ChampionPage() {
                             {elo} • {currentLane?.label}
                         </span>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-2 flex-wrap items-center">
                         <select
                             value={elo}
                             onChange={(e) => handleEloChange(e.target.value)}
@@ -612,9 +624,6 @@ export default function ChampionPage() {
                             <option value="GRANDMASTER">Grandmaster</option>
                             <option value="CHALLENGER">Challenger</option>
                             <option value="PLATINUM+">Platinum+</option>
-                            <option value="MASTER">Master</option>
-                            <option value="GRANDMASTER">Grandmaster</option>
-                            <option value="CHALLENGER">Challenger</option>
                         </select>
                         <Button variant="secondary" onClick={() => router.push("/")}>
                             ← Voltar
