@@ -10,7 +10,7 @@ const elos = [
     { value: "SILVER", label: "Silver" },
     { value: "GOLD", label: "Gold" },
     { value: "PLATINUM", label: "Platinum" },
-    { value: "Platinum+", label: "Platinum+" },
+    { value: "PLATINUM+", label: "Platinum+" },
     { value: "EMERALD", label: "Emerald" },
     { value: "DIAMOND", label: "Diamond" },
     { value: "MASTER", label: "Master" },
