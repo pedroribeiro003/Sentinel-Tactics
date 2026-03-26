@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://sentineltactics.com.br
+
+# Sitemaps
+Sitemap: https://sentineltactics.com.br/sitemap.xml
