@@ -22,7 +22,7 @@ export async function fetchChampionDetails({
     name,
     elo = "PLATINUM",
     lane,
-    patch = "16.05",
+    patch = "16.06",
 }: GetChampionDetailsParams): Promise<ChampionDetails> {
     const safeName = encodeURIComponent(decodeURIComponent(name));
     const { data } = await api.get<ChampionDetails>(`/champions/${safeName}`, {
@@ -35,7 +35,7 @@ export async function fetchChampionPerformance(
     name: string,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<{ champion: Champion; performance: Performance }> {
     const details = await fetchChampionDetails({ name, elo, lane, patch });
     return { champion: details.champion, performance: details.performance };
@@ -45,7 +45,7 @@ export async function fetchChampionBuilds(
     name: string,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<Build[]> {
     const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.builds;
@@ -55,7 +55,7 @@ export async function fetchChampionRunes(
     name: string,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<Runes[]> {
     const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.runes;
@@ -65,7 +65,7 @@ export async function fetchChampionMatchups(
     name: string,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<Matchups> {
     const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.matchups;
@@ -75,7 +75,7 @@ export async function fetchChampionSkillOrder(
     name: string,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<SkillOrder | null> {
     const details = await fetchChampionDetails({ name, elo, lane, patch });
     return details.skillOrder;
@@ -84,7 +84,7 @@ export async function fetchChampionSkillOrder(
 export async function fetchChampionJunglePath(
     name: string,
     elo = "PLATINUM",
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<JunglePath | null> {
     const details = await fetchChampionDetails({ name, elo, patch });
     return details.junglePath;

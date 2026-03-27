@@ -16,7 +16,7 @@ export async function fetchTierList(
     limit = 20,
     elo = "PLATINUM",
     lane?: string,
-    patch = "16.05"
+    patch = "16.06"
 ): Promise<TierListItem[]> {
     const { data } = await api.get<TierListItem[]>("/tier-list", {
         params: { limit, elo, ...(lane ? { lane } : {}) },
